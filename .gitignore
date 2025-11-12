@@ -3,11 +3,20 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.so
 
-# 가상환경/로컬 DB/로그
+# venv
 .venv/
+env/
+venv/
+
+# DB & logs
+db.sqlite3
 *.sqlite3
 *.log
 
-# 환경변수
+# dotenv
 .env
+
+# VSCode
+.vscode/
