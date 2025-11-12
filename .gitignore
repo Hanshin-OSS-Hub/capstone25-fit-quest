@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# 가상환경/로컬 DB/로그
+.venv/
+*.sqlite3
+*.log
+
+# 환경변수
+.env
