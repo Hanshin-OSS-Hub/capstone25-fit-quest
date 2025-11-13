@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#81d742"
+    android:background="#ffffff"
     tools:context=".Running">
 
     <Button
