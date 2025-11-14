@@ -1,16 +1,12 @@
-from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
-from .views import SignupView, EmailTokenObtainPairView, MeView, KakaoLoginView
+from django.contrib import admin
+from django.urls import path, include
+from rest_framework import routers
+from workout.views import RunningSessionViewSet
+
+router = routers.DefaultRouter()
+router.register(r'running', RunningSessionViewSet)
 
 urlpatterns = [
-    # 회원가입 / 로그인 / 토큰 갱신
-    path("auth/signup/", SignupView.as_view(), name="signup"),
-    path("auth/login/", EmailTokenObtainPairView.as_view(), name="login"),   # email+password
-    path("auth/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
-
-    # 내 정보
-    path("auth/me/", MeView.as_view(), name="me"),
-
-    # 카카오 로그인
-    path("auth/kakao/", KakaoLoginView.as_view(), name="kakao-login"),
+    path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),
 ]
