@@ -63,6 +63,8 @@ class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     nickname = models.CharField(max_length=50, unique=True)
+    exp = models.IntegerField(default=0)
+    point = models.IntegerField(default=0)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["nickname"]   # createsuperuser 때 추가로 받는 필드
@@ -87,10 +89,3 @@ class UserStreak(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, primary_key=True, related_name="streak")
     login_streak = models.PositiveIntegerField(default=0)
     quest_streak = models.PositiveIntegerField(default=0)
-
-@receiver(post_save, sender=CustomUser)
-def create_related(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.get_or_create(user=instance)
-        UserSettings.objects.get_or_create(user=instance)
-        UserStreak.objects.get_or_create(user=instance)

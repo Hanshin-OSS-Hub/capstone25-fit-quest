@@ -24,8 +24,8 @@ INSTALLED_APPS = [
     "django_filters",
 
     # 우리 앱
-    "fitquest",
-    'workout'
+    "fitquest.apps.FitquestConfig",
+    'workout.apps.WorkoutConfig',
 ]
 
 # --------------------------------------------------
@@ -117,3 +117,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Kakao OAuth
+KAKAO_REST_API_KEY = "58600a2d5174bd856cea1ad84d27be2b"
+KAKAO_REDIRECT_URI = "https://fitquest25.xyz/api/auth/kakao/"
+KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
+KAKAO_PROFILE_URL = "https://kapi.kakao.com/v2/user/me"

@@ -24,12 +24,26 @@ class SignupSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "email", "nickname")
+        fields = ['id', 'email', 'nickname', 'exp', 'point']
 
-# --- 이메일을 username으로 받지 않고 email 필드로 로그인 ---
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = "email"   # 핵심: email로 인증
+    username_field = "email"
 
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        user = User.objects.filter(email=email).first()
+        if user is None:
+            raise serializers.ValidationError("잘못된 이메일 또는 비밀번호입니다.")
+
+        if not user.check_password(password):
+            raise serializers.ValidationError("잘못된 이메일 또는 비밀번호입니다.")
+
+        # 정상 로그인 → 부모 validate 호출해 JWT 발급
+        data = super().validate(attrs)
+        return data
+    
 # --- JWT 발급 유틸 ---
 def issue_tokens_for_user(user: User) -> dict:
     refresh = RefreshToken.for_user(user)

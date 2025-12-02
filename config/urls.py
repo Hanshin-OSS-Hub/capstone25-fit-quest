@@ -3,6 +3,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("fitquest.urls")),   # ★ API prefix
-    path('api/', include('workout.urls')),
+    path("api/", include("fitquest.urls")),   # ★ 이 한 줄이면 충분함
 ]
