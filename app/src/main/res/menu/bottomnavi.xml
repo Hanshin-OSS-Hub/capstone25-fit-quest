@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/running"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/running_icon"
+        android:title="러닝" />
+
+    <item
+        android:id="@+id/exercise"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/exercise_icon"
+        android:title="운동" />
+
+    <item
+        android:id="@+id/home"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/home_icon"
+        android:title="홈" />
+
+    <item
+        android:id="@+id/quest"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/quest_icon"
+        android:title="퀘스트" />
+
+    <item
+        android:id="@+id/ranking"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ranking_icon"
+        android:title="랭킹" />
+
+
+</menu>

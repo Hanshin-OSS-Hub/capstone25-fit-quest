@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- 카카오 노란색 -->
+    <solid android:color="#FEE500" />
+
+    <!-- 버튼 양 끝 둥글게 -->
+    <corners android:radius="12dp" />
+
+    <!-- 패딩 (버튼 높이) -->
+    <padding
+        android:left="24dp"
+        android:right="24dp"
+        android:top="12dp"
+        android:bottom="12dp" />
+</shape>
