@@ -1,10 +1,6 @@
-package com.example.fitquest
+package com.example.fitquest.Fragment_list
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,8 +10,8 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.widget.TextView
-
-
+import com.example.fitquest.R
+import com.google.android.material.card.MaterialCardView
 
 
 class RunningFragment : Fragment() {
@@ -87,7 +83,7 @@ class RunningFragment : Fragment() {
         val cardViews = listOf(card2Easy, card2Nomal, card2Hard)
 
         // 내용별 색
-        val card2 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card2)
+        val card2 = view.findViewById<MaterialCardView>(R.id.card2)
 
         //버튼 색깔과 내용 교체
         buttons.forEachIndexed { index, btn ->

@@ -1,15 +1,13 @@
-package com.example.fitquest
+package com.example.fitquest.Fragment_list
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.kakao.sdk.common.KakaoSdk
@@ -17,6 +15,7 @@ import com.kakao.sdk.user.UserApiClient
 import org.json.JSONObject
 import java.net.URLEncoder
 import com.android.volley.toolbox.JsonObjectRequest
+import com.example.fitquest.R
 
 
 class Login : AppCompatActivity() {
@@ -104,7 +103,7 @@ class Login : AppCompatActivity() {
         }
 
         val request = object : StringRequest(
-            Request.Method.POST, url,
+            Method.POST, url,
             { response ->
                 Log.i("KakaoToken", "토큰 응답: $response")
                 val json = JSONObject(response)
@@ -151,7 +150,7 @@ class Login : AppCompatActivity() {
 
         // JsonObjectRequest 보내기
         val request = object : JsonObjectRequest(
-            Request.Method.POST, url, jsonBody,
+            Method.POST, url, jsonBody,
             { response ->
                 Log.i("BackendAuth", "백엔드 인증 성공 응답: $response")
                 //Toast.makeText(this, "백엔드 인증 성공!", Toast.LENGTH_SHORT).show()

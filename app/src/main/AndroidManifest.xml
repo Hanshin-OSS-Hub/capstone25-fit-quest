@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".MyApplication"
+        android:name=".Fragment_list.MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -33,10 +33,10 @@
             android:name=".Quest"
             android:exported="true" />
         <activity
-            android:name=".Main"
+            android:name=".Fragment_list.Main"
             android:exported="true" />
         <activity
-            android:name=".Login"
+            android:name=".Fragment_list.Login"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter android:label="kakao_login">

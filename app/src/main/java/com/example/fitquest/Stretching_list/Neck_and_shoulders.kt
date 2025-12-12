@@ -1,13 +1,12 @@
 package com.example.fitquest.Stretching_list
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.fitquest.R
 import android.widget.Button
-import com.example.fitquest.StretchingFragment
+import com.example.fitquest.Fragment_list.StretchingFragment
 
 class Neck_and_shoulders : Fragment(R.layout.fragment_neck_and_shoulders) {
 

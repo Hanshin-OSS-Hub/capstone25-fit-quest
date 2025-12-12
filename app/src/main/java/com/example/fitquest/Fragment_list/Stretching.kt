@@ -1,12 +1,12 @@
-package com.example.fitquest
+package com.example.fitquest.Fragment_list
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import com.example.fitquest.R
 import com.example.fitquest.Stretching_list.Neck_and_shoulders
 import com.example.fitquest.Stretching_list.Shoulder
 import com.example.fitquest.Stretching_list.Upperbody_abdomen
@@ -15,6 +15,7 @@ import com.example.fitquest.Stretching_list.Pelvis_waist
 import com.example.fitquest.Stretching_list.Legs_and_calfs
 import com.example.fitquest.Stretching_list.Foot_ankle
 import com.example.fitquest.Stretching_list.Hand_wrist
+import com.google.android.material.card.MaterialCardView
 
 class StretchingFragment : Fragment(R.layout.stretching) {
 
@@ -33,14 +34,14 @@ class StretchingFragment : Fragment(R.layout.stretching) {
             replaceFragment(containerId, ExerciseFragment())
         }
 
-        val card1 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card1)
-        val card2 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card2)
-        val card3 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card3)
-        val card4 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card4)
-        val card5 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card5)
-        val card6 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card6)
-        val card7 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card7)
-        val card8 = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card8)
+        val card1 = view.findViewById<MaterialCardView>(R.id.card1)
+        val card2 = view.findViewById<MaterialCardView>(R.id.card2)
+        val card3 = view.findViewById<MaterialCardView>(R.id.card3)
+        val card4 = view.findViewById<MaterialCardView>(R.id.card4)
+        val card5 = view.findViewById<MaterialCardView>(R.id.card5)
+        val card6 = view.findViewById<MaterialCardView>(R.id.card6)
+        val card7 = view.findViewById<MaterialCardView>(R.id.card7)
+        val card8 = view.findViewById<MaterialCardView>(R.id.card8)
 
         val containerId = container?.id ?: 0
 

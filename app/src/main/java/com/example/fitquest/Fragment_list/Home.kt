@@ -1,4 +1,4 @@
-package com.example.fitquest
+package com.example.fitquest.Fragment_list
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -7,15 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.content.Intent
 import android.widget.Button
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import android.os.Handler
 import android.os.Looper
 
 import android.widget.TextView
+import com.example.fitquest.R
 import java.text.SimpleDateFormat
 import java.util.*
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class HomeFragment : Fragment() {
 

@@ -2,12 +2,11 @@ package com.example.fitquest.Stretching_list
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.fitquest.R
 import android.widget.Button
-import com.example.fitquest.StretchingFragment
+import com.example.fitquest.Fragment_list.StretchingFragment
 
 class Upperbody_abdomen : Fragment(R.layout.fragment_upperbody_abdomen) {
 

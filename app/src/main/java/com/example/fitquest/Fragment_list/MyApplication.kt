@@ -1,6 +1,7 @@
-package com.example.fitquest
+package com.example.fitquest.Fragment_list
 
 import android.app.Application
+import com.example.fitquest.R
 import com.kakao.sdk.common.KakaoSdk
 
 class MyApplication : Application() {
