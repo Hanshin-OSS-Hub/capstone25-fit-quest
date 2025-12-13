@@ -61,10 +61,15 @@ Android 앱과 **JWT 인증**을 기반으로 통신합니다.
 ## 프로젝트 구조 (Project Structure)
 capstone25-fit-quest/
 ├── config/ # Django settings, URLs, WSGI
+
 ├── fitquest/ # Auth, User, Kakao 로그인 관련 도메인
+
 ├── workout/ # Running + Quest 시스템
+
 ├── docker-compose.yml
+
 ├── Dockerfile
+
 └── manage.py
 
 
