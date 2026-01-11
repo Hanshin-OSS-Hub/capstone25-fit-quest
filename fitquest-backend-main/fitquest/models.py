@@ -65,6 +65,9 @@ class CustomUser(AbstractUser):
     nickname = models.CharField(max_length=50, unique=True)
     exp = models.IntegerField(default=0)
     point = models.IntegerField(default=0)
+    @property
+    def level(self):
+        return 1 + (self.exp // 100)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["nickname"]   # createsuperuser 때 추가로 받는 필드

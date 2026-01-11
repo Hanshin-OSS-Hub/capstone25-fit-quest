@@ -22,9 +22,11 @@ class SignupSerializer(serializers.ModelSerializer):
 
 # --- 내 정보 응답 ---
 class UserSerializer(serializers.ModelSerializer):
+    level = serializers.ReadOnlyField() 
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'nickname', 'exp', 'point']
+        fields = ['id', 'email', 'nickname', 'level', 'exp', 'point']
 
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = "email"

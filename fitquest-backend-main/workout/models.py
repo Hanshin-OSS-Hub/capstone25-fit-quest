@@ -27,21 +27,19 @@ class Quest(models.Model):
 class UserQuestProgress(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
+    
     progress_value = models.FloatField(default=0)
     is_completed = models.BooleanField(default=False)
+    
+    # [핵심 변경] 언제 완료한 퀘스트인지 '주기'를 기록 (예: "2024-05-20" 또는 "2024-W21")
+    cycle_key = models.CharField(max_length=20, default="", db_index=True)
+    
     completed_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    def update_progress(self, value):
-        """ 값 추가 후 자동 체크 """
-        if not self.is_completed:
-            self.progress_value += value
-            if self.progress_value >= self.quest.target_value:
-                self.is_completed = True
-                self.completed_at = timezone.now()
-                self.user.exp += self.quest.reward_xp
-                self.user.point += self.quest.reward_points
-                self.user.save()
-            self.save()
+    class Meta:
+        # 유저+퀘스트+주기 3가지가 합쳐서 유니크해야 함 (중복 생성 방지)
+        unique_together = ('user', 'quest', 'cycle_key')
 
 
 User = get_user_model()
