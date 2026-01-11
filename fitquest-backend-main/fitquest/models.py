@@ -63,25 +63,25 @@ class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     nickname = models.CharField(max_length=50, unique=True)
+    
     exp = models.IntegerField(default=0)
     point = models.IntegerField(default=0)
+    
+    # 필요하다면 칼로리 계산용 몸무게 필드도 나중에 여기에 추가 (일단 70kg 기본 가정)
+    # weight_kg = models.FloatField(default=70.0)
+
     @property
     def level(self):
         return 1 + (self.exp // 100)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["nickname"]   # createsuperuser 때 추가로 받는 필드
+    REQUIRED_FIELDS = ["nickname"]
 
     objects = CustomUserManager()
 
     def __str__(self):
         return self.email
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, primary_key=True, related_name="profile")
-    level = models.PositiveIntegerField(default=1)
-    exp = models.PositiveIntegerField(default=0)
-    points = models.PositiveIntegerField(default=0)
 
 class UserSettings(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, primary_key=True, related_name="settings")

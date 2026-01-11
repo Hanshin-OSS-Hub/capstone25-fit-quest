@@ -18,19 +18,20 @@ def get_cycle_key(quest_type):
 @transaction.atomic
 def process_running_log(running_session):
     """
-    러닝 기록이 들어오면 -> 해당하는 주기(cycle)의 퀘스트 진행도 갱신
+    러닝 기록이 들어오면 -> 퀘스트 타입(거리, 시간, 칼로리)에 맞춰 진행도 갱신
     """
     user = running_session.user
-    distance = float(running_session.distance_km)
     
-    # 활성화된 모든 퀘스트 가져오기
+    # 기록에서 필요한 값들 미리 추출
+    record_distance = float(running_session.distance_km)
+    record_duration_min = running_session.duration_sec / 60.0  # 분 단위 변환
+    record_calories = running_session.calories_burned
+
     active_quests = Quest.objects.filter(is_active=True)
 
     for quest in active_quests:
-        # 1. 지금 달리는 이 기록이 "어느 주기"에 해당하는지 키 생성
         key = get_cycle_key(quest.quest_type)
         
-        # 2. "해당 주기"의 진행 데이터가 없으면 새로 만듦 (이게 리셋 효과!)
         progress, created = UserQuestProgress.objects.get_or_create(
             user=user,
             quest=quest,
@@ -38,17 +39,25 @@ def process_running_log(running_session):
             defaults={'progress_value': 0, 'is_completed': False}
         )
 
-        # 3. 완료 안 된 것만 진행도 추가
-        if not progress.is_completed:
-            progress.progress_value += distance
+        # 이미 완료된 퀘스트는 계산 건너뜀 (성능 최적화)
+        if progress.is_completed:
+            continue
+
+        # ★ 핵심: 퀘스트 측정 기준(metric)에 따라 알맞은 값을 더함
+        # (이 부분이 없으면 시간/칼로리 퀘스트가 작동 안 함)
+        if quest.metric == 'distance':
+            progress.progress_value += record_distance
+        elif quest.metric == 'duration':
+            progress.progress_value += record_duration_min
+        elif quest.metric == 'calories':
+            progress.progress_value += record_calories
+        
+        # 목표 달성 체크
+        if progress.progress_value >= quest.target_value:
+            progress.is_completed = True
+            progress.progress_value = quest.target_value # 100% 채운걸로 표기 (UI 깔끔하게)
             
-            # 목표 달성 체크
-            if progress.progress_value >= quest.target_value:
-                progress.is_completed = True
-                # 주의: 여기서 보상(exp)을 바로 주지 않습니다. 
-                # 나중에 사용자가 "보상 받기" 버튼 누를 때 줍니다. (Claim API)
-            
-            progress.save()
+        progress.save()
     
 
 from rest_framework.exceptions import ValidationError

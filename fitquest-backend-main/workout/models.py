@@ -12,9 +12,16 @@ class Quest(models.Model):
         ('monthly', 'Monthly'),
     )
 
+    METRIC_TYPES = (
+        ('distance', 'Distance (km)'),
+        ('duration', 'Duration (min)'),
+        ('calories', 'Calories (kcal)'),
+    )
+
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     quest_type = models.CharField(max_length=10, choices=QUEST_TYPES)
+    metric = models.CharField(max_length=10, choices=METRIC_TYPES, default='distance')
     target_value = models.FloatField(default=1)
     reward_xp = models.IntegerField(default=0)
     reward_points = models.IntegerField(default=0)
@@ -48,14 +55,17 @@ class RunningSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     distance_km = models.DecimalField(max_digits=5, decimal_places=2)
     duration_sec = models.IntegerField()
-    avg_pace_min_per_km = models.DecimalField(max_digits=4, decimal_places=2)
-    current_pace_min_per_km = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
-    calories_burned = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    
+    # 서버가 계산해서 넣을 필드들
+    avg_pace_min_per_km = models.DecimalField(max_digits=5, decimal_places=2)
+    calories_burned = models.IntegerField(default=0)  # ★ 필드 추가!
+    
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.email} - {self.distance_km}km"
+
 
 

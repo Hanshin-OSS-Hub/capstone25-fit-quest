@@ -82,20 +82,23 @@ class RunningSessionSerializer(serializers.ModelSerializer):
         distance = float(validated_data['distance_km'])
         duration_sec = validated_data['duration_sec']
 
-        # 1. 평균 페이스 계산 (분/km)
-        # 예: 5km를 1800초(30분)에 뛰었다면 -> 30 / 5 = 6분/km
+        # 1. 평균 페이스 계산
         if distance > 0:
             duration_min = duration_sec / 60
             calculated_pace = duration_min / distance
-            # 99.99분 넘어가면 잘림 방지
-            validated_data['avg_pace_min_per_km'] = min(calculated_pace, 99.99)
+            validated_data['avg_pace_min_per_km'] = round(calculated_pace, 2)
         else:
             validated_data['avg_pace_min_per_km'] = 0
 
-        # 2. 칼로리 단순 계산 (METs 공식 약식 적용: 거리 * 몸무게 * 1.03)
-        # 몸무게 데이터가 없으니 임의로 70kg 기준 or 단순히 거리 비례로 저장
-        # (나중에 UserProfile에 weight 추가하면 거기서 가져오도록 고도화 가능)
-        validated_data['calories_burned'] = distance * 70 * 1.03
+        # 2. 칼로리 계산 (표준 공식: METs * 체중 * 시간)
+        # 간단 공식: 체중(kg) * 거리(km) (체중 70kg 가정 시)
+        # 좀 더 정교한 METs 공식을 쓰고 싶다면 아래처럼 구현
+        # (러닝 METs는 대략 8.0 ~ 11.0 사이, 여기선 평균 1km당 70kcal 소모로 단순화 or 공식 적용)
+        
+        # [단순공식] 1km당 약 60~70kcal 소모 , 나중에 수정
+        estimated_calories = distance * 70 
+        
+        validated_data['calories_burned'] = int(estimated_calories)
 
         return super().create(validated_data)
     
