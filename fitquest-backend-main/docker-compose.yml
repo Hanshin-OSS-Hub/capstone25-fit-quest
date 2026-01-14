@@ -7,6 +7,8 @@ services:
       - "8000:8000"
     networks:
       - fitquest-net
+    env_file:
+      - .env
 
 networks:
   fitquest-net:
