@@ -21,8 +21,10 @@ sqlparse==0.5.3
 tzdata==2025.2
 uritemplate==4.2.0
 urllib3==2.5.0
-mysqlclient
+mysqlclient==2.2.4
 gunicorn==23.0.0
+
+
 
 
 
