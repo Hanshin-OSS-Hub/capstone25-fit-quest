@@ -1,8 +1,16 @@
 services:
-  web:
-    build: .
-    container_name: fitquest-backend-web
+  nginx:
+    image: nginx:latest
+    container_name: fitquest-nginx
     ports:
-      - "8000:8000"
-    env_file:
-      - .env
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - fitquest-net
+
+networks:
+  fitquest-net:
+    external: true
