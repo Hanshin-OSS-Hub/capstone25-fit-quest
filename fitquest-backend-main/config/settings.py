@@ -120,3 +120,17 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# -- CSRF
+CSRF_TRUSTED_ORIGINS = [
+    "https://fitquest25.xyz",
+    "https://www.fitquest25.xyz",
+]
+
+ALLOWED_HOSTS = [
+    "fitquest25.xyz",
+    "www.fitquest25.xyz",
+    "localhost",
+    "127.0.0.1",
+]
+
