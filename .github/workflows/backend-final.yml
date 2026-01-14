@@ -1,4 +1,4 @@
-name: Deploy Backend
+name: Deploy Backend 
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "."
-          target: "/home/ubuntu/fitquest-backend"
+          target: "/home/ubuntu/fitquest/capstone25-fit-quest"
 
       # 3. EC2에서 실제 배포 실행 (deploy.sh 기준)
       - name: Deploy on EC2
@@ -35,6 +35,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/fitquest
+            cd /home/ubuntu/fitquest/capstone25-fit-quest/fitquest-backend-main
             chmod +x deploy.sh
             ./deploy.sh
