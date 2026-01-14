@@ -23,6 +23,9 @@ uritemplate==4.2.0
 urllib3==2.5.0
 mysqlclient==2.1.1
 gunicorn==23.0.0
+drf-yasg==1.21.7
+
+
 
 
 
