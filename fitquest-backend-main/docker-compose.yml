@@ -1,13 +1,10 @@
 services:
-  nginx:
-    image: nginx:latest
-    container_name: fitquest-nginx
+  web:
+    container_name: fitquest-backend-web
+    build: .
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - "8000:8000"
     networks:
       - fitquest-net
 
