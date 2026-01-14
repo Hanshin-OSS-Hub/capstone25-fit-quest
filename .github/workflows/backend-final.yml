@@ -11,27 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      # 1. 항상 backend-final 코드로 배포
+      - name: Checkout backend-final code
+        uses: actions/checkout@v4
+        with:
+          ref: backend-final
 
+      # 2. EC2로 코드 복사 (경로는 구조상 남겨둠)
       - name: Copy code to EC2
-        uses: appleboy/scp-action@v0.1.3
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
           source: "."
-          target: "/home/ubuntu/fitquest"
+          target: "/home/ubuntu/fitquest-backend"
 
+      # 3. EC2에서 실제 배포 실행 (deploy.sh 기준)
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
           script: |
-            cd ~/fitquest
+            cd /home/ubuntu/fitquest
             chmod +x deploy.sh
             ./deploy.sh
