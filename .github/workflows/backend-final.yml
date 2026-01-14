@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - backend-final
+  workflow_dispatch:
 
 jobs:
   deploy:
