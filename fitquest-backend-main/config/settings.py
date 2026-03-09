@@ -52,17 +52,17 @@ WSGI_APPLICATION = "config.wsgi.application"
 # --------------------------------------------------
 # 4. 데이터베이스 (MySQL)
 # --------------------------------------------------
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
+        'NAME': 'fitquest_db',      # 방금 CREATE DATABASE로 만든 이름
+        'USER': 'root',             # 현재 접속한 유저
+        'PASSWORD': '1234',             # 별도로 설정 안 했다면 빈 값 (혹은 설정한 비번)
+        'HOST': '127.0.0.1',        # 'db'가 아니라 127.0.0.1
         'PORT': '3306',
     }
 }
-
 # --------------------------------------------------
 # 5. 사용자 인증 모델 (커스텀 유저)
 # --------------------------------------------------
@@ -139,3 +139,9 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
+
+# Kakao OAuth 
+KAKAO_REST_API_KEY = "58600a2d5174bd856cea1ad84d27be2b"
+KAKAO_REDIRECT_URI = "https://fitquest25.xyz/api/auth/kakao/"
+KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
+KAKAO_PROFILE_URL = "https://kapi.kakao.com/v2/user/me"

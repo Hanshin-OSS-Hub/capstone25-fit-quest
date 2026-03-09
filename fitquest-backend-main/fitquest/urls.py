@@ -9,7 +9,6 @@ from workout.views import (
     RunningSessionListCreateView,
     RunningSessionDetailView,
     RunningSummaryTodayView,
-    RunningSummaryWeekView,
     RunningSummary7DaysView,
     RunningStatsView,
     AvailableQuestListAPIView,
@@ -28,7 +27,6 @@ urlpatterns = [
     path("running/", RunningSessionListCreateView.as_view()),
     path("running/<int:pk>/", RunningSessionDetailView.as_view()),
     path("running/today/", RunningSummaryTodayView.as_view()),
-    path("running/week/", RunningSummaryWeekView.as_view()),
     path("running/7days/", RunningSummary7DaysView.as_view()),
     path("running/stats/", RunningStatsView.as_view()),
 

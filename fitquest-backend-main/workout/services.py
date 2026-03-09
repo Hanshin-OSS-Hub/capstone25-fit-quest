@@ -7,7 +7,7 @@ def get_cycle_key(quest_type):
     """퀘스트 타입에 따라 현재 주기의 키(ID)를 생성"""
     today = timezone.now().date()
     if quest_type == 'daily':
-        return str(today)  # "2025-01-06" (오늘 날짜)
+        return str(today)  # "2026-01-06" (오늘 날짜)
     elif quest_type == 'weekly':
         # %Y-W%U : 2025년 2번째 주 -> "2025-W02"
         return today.strftime("%Y-W%U")
