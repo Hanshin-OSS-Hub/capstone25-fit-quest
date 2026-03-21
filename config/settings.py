@@ -2,11 +2,35 @@ from pathlib import Path
 from datetime import timedelta
 import os
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # 상세한 에러와 요청을 모두 보겠다는 뜻
+        },
+        'fitquest': {  # 내 앱 이름에 맞게 추가 (앱 이름이 fitquest라면)
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'workout': {  # 운동 앱 로그도 보기 위해 추가
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-dev-temp-key"
 DEBUG = True
-ALLOWED_HOSTS = ["*"]  # 안드로이드 앱에서 접근 테스트 시 편의상 허용
+
 
 # --------------------------------------------------
 # 1. INSTALLED_APPS (필요한 최소 구성)
@@ -52,14 +76,13 @@ WSGI_APPLICATION = "config.wsgi.application"
 # --------------------------------------------------
 # 4. 데이터베이스 (MySQL)
 # --------------------------------------------------
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fitquest_db',      # 방금 CREATE DATABASE로 만든 이름
-        'USER': 'root',             # 현재 접속한 유저
-        'PASSWORD': '1234',             # 별도로 설정 안 했다면 빈 값 (혹은 설정한 비번)
-        'HOST': '127.0.0.1',        # 'db'가 아니라 127.0.0.1
+        'NAME': 'fitquest_db',
+        'USER': 'user',
+        'PASSWORD': 'password123',
+        'HOST': 'db',  # docker-compose에 적은 서비스 이름
         'PORT': '3306',
     }
 }
@@ -117,12 +140,13 @@ TEMPLATES = [
 LANGUAGE_CODE = "ko-kr"
 TIME_ZONE = "Asia/Seoul"
 USE_I18N = True
-USE_TZ = True
+USE_TZ = False
 
 # --------------------------------------------------
 # 8. 정적 파일 (거의 안씀)
 # --------------------------------------------------
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -131,17 +155,14 @@ CSRF_TRUSTED_ORIGINS = [
     "https://fitquest25.xyz",
     "https://www.fitquest25.xyz",
 ]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ALLOWED_HOSTS = [
     "fitquest25.xyz",
     "www.fitquest25.xyz",
     "localhost",
     "127.0.0.1",
+    "0.0.0.0",
 ]
 
 
-# Kakao OAuth 
-KAKAO_REST_API_KEY = "58600a2d5174bd856cea1ad84d27be2b"
-KAKAO_REDIRECT_URI = "https://fitquest25.xyz/api/auth/kakao/"
-KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
-KAKAO_PROFILE_URL = "https://kapi.kakao.com/v2/user/me"

@@ -1,64 +1,36 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth import get_user_model
-from .models import RunningSession, Quest, UserQuestProgress
-
-User = get_user_model()
+from .models import Exercise, ExerciseLog, RunningSession, Quest, UserQuestProgress
 
 # ==========================================
-# 1. 사용자 인증 관련 (Signup, Login, Profile)
+# 1. 일반 운동 및 스트레칭
 # ==========================================
+class ExerciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercise
+        fields = ['id', 'name', 'category', 'calories_per_minute']
 
-class SignupSerializer(serializers.ModelSerializer):
-    """회원가입: 비밀번호 해싱 및 최소 길이 검증"""
-    password = serializers.CharField(write_only=True, min_length=8)
+class ExerciseLogSerializer(serializers.ModelSerializer):
+    # 프론트엔드에서 보여주기 편하도록 운동 이름도 같이 넘겨줍니다!
+    exercise_name = serializers.CharField(source='exercise.name', read_only=True)
 
     class Meta:
-        model = User
-        fields = ("email", "nickname", "password")
-
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
-
-
-class UserSerializer(serializers.ModelSerializer):
-    """내 정보 응답: 모델의 @property(level)를 포함"""
-    level = serializers.ReadOnlyField() 
-
-    class Meta:
-        model = User
-        fields = ['id', 'email', 'nickname', 'level', 'exp', 'point']
-
-
-class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
-    """로그인: 이메일을 아이디로 사용하는 JWT 발급"""
-    username_field = "email"
-
-    def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
-        user = User.objects.filter(email=email).first()
-
-        if user is None or not user.check_password(password):
-            raise serializers.ValidationError("잘못된 이메일 또는 비밀번호입니다.")
-
-        return super().validate(attrs)
+        model = ExerciseLog
+        fields = ['id', 'exercise', 'exercise_name', 'duration_minutes', 'calories_burned', 'created_at']
+        read_only_fields = ['id', 'calories_burned', 'created_at']
 
 
 # ==========================================
-# 2. 러닝 기록 관련 (자동 계산 로직 포함)
+# 2. 러닝 기록
 # ==========================================
-
 class RunningSessionSerializer(serializers.ModelSerializer):
-    # 페이스와 칼로리는 서버에서 계산하므로 읽기 전용으로 설정
+    # 페이스와 칼로리는 서버에서 계산하므로 읽기 전용(read_only)으로 설정
     avg_pace_min_per_km = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
     calories_burned = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = RunningSession
         fields = [
-            "id", "distance_km", "duration_sec", "avg_pace_min_per_km", 
+            "id", "distance_km", "duration_sec", "avg_pace_min_per_km", "current_pace_min_per_km",
             "calories_burned", "start_time", "end_time", "created_at"
         ]
         read_only_fields = ["id", "created_at"]
@@ -69,8 +41,9 @@ class RunningSessionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("거리는 0km보다 커야 합니다.")
         if data.get('duration_sec', 0) <= 0:
             raise serializers.ValidationError("시간은 0초보다 커야 합니다.")
-        if data['start_time'] > data['end_time']:
-            raise serializers.ValidationError("종료 시간이 시작 시간보다 빠를 수 없습니다.")
+        if data.get('start_time') and data.get('end_time'):
+            if data['start_time'] > data['end_time']:
+                raise serializers.ValidationError("종료 시간이 시작 시간보다 빠를 수 없습니다.")
         return data
 
     def create(self, validated_data):
@@ -90,14 +63,12 @@ class RunningSessionSerializer(serializers.ModelSerializer):
 
 
 # ==========================================
-# 3. 퀘스트 관련 (상세 정보 포함)
+# 3. 퀘스트 관련
 # ==========================================
-
 class QuestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quest
         fields = "__all__"
-
 
 class UserQuestProgressSerializer(serializers.ModelSerializer):
     """유저의 퀘스트 진행도: 퀘스트의 상세 정보를 함께 제공"""
@@ -115,3 +86,21 @@ class UserQuestProgressSerializer(serializers.ModelSerializer):
             "cycle_key", "completed_at"
         ]
         read_only_fields = ["is_completed", "completed_at"]
+def process_running_log(running_session):
+    from .models import UserQuestProgress
+    from datetime import date
+    user = running_session.user
+    today_key = date.today().strftime('%Y-%m-%d')
+    progress_list = UserQuestProgress.objects.filter(user=user, cycle_key=today_key)
+    for p in progress_list:
+        quest = p.quest
+        if p.is_completed: continue
+        if quest.metric == 'distance':
+            p.progress_value += float(running_session.distance_km)
+        elif quest.metric == 'duration':
+            p.progress_value += float(running_session.duration_sec)
+        elif quest.metric == 'calories':
+            p.progress_value += float(running_session.calories_burned or 0)
+        if p.progress_value >= quest.target_value:
+            p.is_completed = True
+        p.save()

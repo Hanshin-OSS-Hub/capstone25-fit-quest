@@ -14,8 +14,11 @@ class SignupSerializer(serializers.ModelSerializer):
         fields = ("email", "nickname", "password")
 
     def create(self, validated_data):
-        # UserManager의 create_user를 사용하여 비밀번호 해싱 처리 자동화
-        return User.objects.create_user(**validated_data)
+        password = validated_data.pop("password")
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
 
 # --- 내 정보 응답 ---
 class UserSerializer(serializers.ModelSerializer):
