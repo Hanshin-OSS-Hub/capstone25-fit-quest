@@ -2,11 +2,16 @@
 import requests
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from yaml import serializer
+from rest_framework import generics
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated
+from workout.models import Achievement, UserAchievement # 모델 경로 확인 필요
+from .serializers import AchievementSerializer # 업적 시리얼라이저 정의 필요
 
 from .serializers import (
     SignupSerializer,
@@ -127,8 +132,17 @@ class MeView(APIView):
     parser_classes = [JSONParser]
 
     def get(self, request):
-        return Response(UserSerializer(request.user).data)
+    # serializer 호출 시 context에 request를 넘겨줌
+        serializer = UserSerializer(request.user, context={'request': request})
+        return Response(serializer.data)
 
+    def patch(self, request):
+        # 유저 정보를 부분 업데이트(partial=True) 합니다.
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # ---------------------------------------------------------------------
 # 4) 카카오 로그인 (SDK에서 받은 access_token → 검증 → 유저 upsert → JWT)
@@ -179,3 +193,26 @@ class KakaoLoginView(APIView):
         tokens = issue_tokens_for_user(user)
         return Response({"user": UserSerializer(user).data, "tokens": tokens}, status=200)
 
+#전체 업적 view
+class AchievementListView(generics.ListAPIView):
+    queryset = Achievement.objects.all()
+    serializer_class = AchievementSerializer
+    permission_classes = [IsAuthenticated]
+
+    
+# 보유 칭호 목록 View 
+class MyTitleListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # 유저가 획득한 업적들에서 칭호만 추출
+        achieved_titles = UserAchievement.objects.filter(user=request.user).values_list('achievement__reward_title', flat=True)
+        
+        # 프론트 요청 형식에 맞게 변환
+        data = [
+            {
+                "title": title,
+                "is_equipped": (title == request.user.current_title)
+            } for title in achieved_titles
+        ]
+        return Response(data)   

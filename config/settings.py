@@ -76,16 +76,19 @@ WSGI_APPLICATION = "config.wsgi.application"
 # --------------------------------------------------
 # 4. 데이터베이스 (MySQL)
 # --------------------------------------------------
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'fitquest_db',
         'USER': 'user',
         'PASSWORD': 'password123',
-        'HOST': 'db',  # docker-compose에 적은 서비스 이름
+        'HOST': '127.0.0.1',
         'PORT': '3306',
     }
 }
+
+
 # --------------------------------------------------
 # 5. 사용자 인증 모델 (커스텀 유저)
 # --------------------------------------------------
@@ -163,6 +166,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "0.0.0.0",
+
 ]
 
 

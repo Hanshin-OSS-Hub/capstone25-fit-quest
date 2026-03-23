@@ -18,14 +18,17 @@ from .views import (
     AvailableQuestListAPIView,
     UserQuestProgressListAPIView,
     ClaimQuestRewardAPIView,
+
+    # 5. 홈 트레이닝 
+    WorkoutListView,
+
+    # 6. 업적 및 칭호 
+    AchievementListAPIView,
 )
 
 urlpatterns = [
-
-    # api/workout/ 주소로 들어오면 바로 운동 목록을 보여주게 설정
+    # api/workout/ 접속 시 기본 페이지 
     path("", ExerciseListAPIView.as_view(), name="workout-index"), 
-    
-    path("exercises/", ExerciseListAPIView.as_view(), name="exercise-list"),
     
     # ==========================================
     # 1. 일반 운동 및 스트레칭
@@ -53,4 +56,14 @@ urlpatterns = [
     path("quests/", AvailableQuestListAPIView.as_view(), name="quest-list"),
     path("my-quests/", UserQuestProgressListAPIView.as_view(), name="my-quests"),
     path("quests/claim/<int:pk>/", ClaimQuestRewardAPIView.as_view(), name="quest-claim"),
+
+    # ==========================================
+    # 5. 홈 트레이닝 
+    # ==========================================
+    path("workouts/", WorkoutListView.as_view(), name="workout-list"),
+
+    # ==========================================
+    # 6. 업적 및 칭호 시스템 
+    # ==========================================
+    path("achievements/", AchievementListAPIView.as_view(), name="achievement-list"),
 ]

@@ -4,6 +4,9 @@ from .views import (
     EmailTokenObtainPairView,
     MeView,
     KakaoLoginView,
+    AchievementListView,
+    MyTitleListView,
+    
 )
 
 urlpatterns = [
@@ -11,4 +14,6 @@ urlpatterns = [
     path("login/", EmailTokenObtainPairView.as_view(), name="login"),
     path("me/", MeView.as_view(), name="me"),
     path("kakao/", KakaoLoginView.as_view(), name="kakao-login"),
+    path('achievements/', AchievementListView.as_view()),
+    path('titles/', MyTitleListView.as_view()),
 ]

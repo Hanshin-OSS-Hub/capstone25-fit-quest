@@ -1,8 +1,10 @@
+# fitquest/serializers.py
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from workout.models import Workout, Quest, Achievement, UserAchievement 
+
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
 User = get_user_model()
 
 # --- 회원가입 ---
@@ -23,10 +25,12 @@ class SignupSerializer(serializers.ModelSerializer):
 # --- 내 정보 응답 ---
 class UserSerializer(serializers.ModelSerializer):
     level = serializers.ReadOnlyField() 
-
+    monster_tier = serializers.ReadOnlyField() # 프로퍼티는 읽기 전용으로 명시
+    
     class Meta:
         model = User
-        fields = ['id', 'email', 'nickname', 'level', 'exp', 'point']
+        fields = ['id', 'email', 'nickname', 'level', 'exp', 'point','monster_tier','current_title']
+        read_only_fields = ['monster_tier']
 
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = "email"
@@ -50,3 +54,8 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
 def issue_tokens_for_user(user: User) -> dict:
     refresh = RefreshToken.for_user(user)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
+
+class AchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Achievement
+        fields = '__all__'
