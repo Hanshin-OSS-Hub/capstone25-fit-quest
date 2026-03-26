@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/img_login_back"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66000000" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="32dp">
+
+            <!-- 타이틀 -->
+            <TextView
+                android:id="@+id/signup_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="회원가입"
+                android:textSize="48sp"
+                android:textStyle="bold|italic"
+                android:textColor="@android:color/white"
+                android:fontFamily="@font/poppins_bold"
+                android:gravity="center"
+                android:shadowColor="#80000000"
+                android:shadowDx="0"
+                android:shadowDy="2"
+                android:shadowRadius="6"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="36sp"
+                app:autoSizeMaxTextSize="48sp"
+
+                app:layout_constraintWidth_percent="0.8"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.2" />
+
+            <!-- 이메일 입력 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/email_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="#FFFFFF"
+                app:boxStrokeWidth="2dp"
+                app:hintTextColor="#FFFFFF"
+
+                app:layout_constraintTop_toBottomOf="@id/signup_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.85"
+                android:layout_marginTop="40dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/email_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="이메일"
+                    android:inputType="textEmailAddress"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#CCCCCC"
+                    android:textSize="16sp"
+                    android:padding="16dp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 닉네임 입력 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/nickname_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="#FFFFFF"
+                app:boxStrokeWidth="2dp"
+                app:hintTextColor="#FFFFFF"
+
+                app:layout_constraintTop_toBottomOf="@id/email_layout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.85"
+                android:layout_marginTop="20dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/nickname_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="닉네임"
+                    android:inputType="text"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#CCCCCC"
+                    android:textSize="16sp"
+                    android:padding="16dp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 비밀번호 입력 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/password_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="#FFFFFF"
+                app:boxStrokeWidth="2dp"
+                app:hintTextColor="#FFFFFF"
+                app:endIconMode="password_toggle"
+                app:endIconTint="#FFFFFF"
+
+                app:layout_constraintTop_toBottomOf="@id/nickname_layout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.85"
+                android:layout_marginTop="20dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/password_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="비밀번호 (6자 이상)"
+                    android:inputType="textPassword"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#CCCCCC"
+                    android:textSize="16sp"
+                    android:padding="16dp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 회원가입 버튼 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/signup_button"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:minHeight="50dp"
+                android:text="회원가입"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:fontFamily="@font/poppins_bold"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="14sp"
+                app:autoSizeMaxTextSize="18sp"
+
+                app:backgroundTint="#1565C0"
+                app:cornerRadius="12dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="#0D47A1"
+                app:elevation="4dp"
+
+                app:layout_constraintWidth_percent="0.6"
+                app:layout_constraintTop_toBottomOf="@id/password_layout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="40dp" />
+
+            <!-- 로그인 링크 -->
+            <TextView
+                android:id="@+id/go_to_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이미 계정이 있으신가요? 로그인"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:clickable="true"
+                android:focusable="true"
+
+                app:layout_constraintTop_toBottomOf="@id/signup_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="40dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+</FrameLayout>

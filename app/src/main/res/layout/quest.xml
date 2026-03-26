@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/img_quest_back"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66000000" />
+
+    <androidx.core.widget.NestedScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/nestedScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:paddingBottom="100dp"
+        tools:paddingBottom="0dp"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="true"
+        tools:context=".Fragment_list.QuestFragment">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/quest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/quest1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="퀘스트"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:textColor="#ffffff"/>
+
+            <TextView
+                android:id="@+id/quest2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/quest1"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="퀘스트를 완료하고 레벨업 하세요"
+                android:textSize="15sp"
+                android:textColor="#ffffff"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/buttonContainer"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="12dp"
+                android:background="#CCCCCC"
+                app:layout_constraintTop_toBottomOf="@id/quest2"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:cardElevation="0dp"
+                android:padding="4dp">
+
+                <!-- 추가/수정: ToggleGroup으로 변경 -->
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggleGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:singleSelection="true"
+                    app:selectionRequired="true"
+                    android:background="#CCCCCC"
+                    android:padding="4dp"
+                    app:cornerRadius="12dp">
+
+                    <!-- MaterialButton으로 변경 -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/dailyButton"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="일일"
+                        android:textColor="#000000"
+                        android:backgroundTint="#CCCCCC" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/weeklyButton"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="주간"
+                        android:textColor="#000000"
+                        android:backgroundTint="#CCCCCC" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/monthlyButton"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="월간"
+                        android:textColor="#000000"
+                        android:backgroundTint="#CCCCCC" />
+
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/gauge"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="2:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/buttonContainer"
+
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="16dp"
+
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="#e6d4fc"
+                app:strokeColor="#1e73be"
+                app:strokeWidth="1dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🚀 이번달 전체 달성률"
+                        android:textSize="15sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.05"
+                        app:layout_constraintVertical_bias="0" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0%"
+                        android:textSize="20sp"
+                        android:textColor="#923dfa"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="1"
+                        app:layout_constraintVertical_bias="0" />
+
+                    <ProgressBar
+                        android:id="@+id/exp_progress"
+                        style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                        android:layout_width="0dp"
+                        android:layout_height="20dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/progress_bar_custom2"
+                        android:max="100"
+
+                        android:backgroundTint="#CCCCCC"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.3" />
+
+                    <TextView
+
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.9"
+                        app:layout_constraintHorizontal_bias="0.1"
+                        android:text="일일\n0/90"
+                        android:gravity="center"
+                        android:textSize="20dp"
+                        android:textStyle="bold"
+                        android:textColor="#555555"/>
+
+                    <TextView
+
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.9"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        android:text="주간\n0/8"
+                        android:gravity="center"
+                        android:textSize="20dp"
+                        android:textStyle="bold"
+                        android:textColor="#555555"/>
+
+                    <TextView
+
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.9"
+                        app:layout_constraintHorizontal_bias="0.9"
+                        android:text="월간\n0/1"
+                        android:gravity="center"
+                        android:textSize="20dp"
+                        android:textStyle="bold"
+                        android:textColor="#555555"/>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+</FrameLayout>

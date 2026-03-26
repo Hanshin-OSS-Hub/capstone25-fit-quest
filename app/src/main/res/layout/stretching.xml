@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nestedScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:paddingBottom="100dp"
+    tools:paddingBottom="0dp"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="true"
+    android:background="#ffffff"
+    tools:context=".Stretching">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+
+        android:id="@+id/stretching"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/go_exercise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="&lt;- 뒤로"
+            android:backgroundTint="#FFFFFF"
+            android:textColor="#000000"
+            android:textSize="15dp"
+            android:textStyle="bold"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+
+            app:layout_constraintVertical_bias="0.02"
+            app:layout_constraintHorizontal_bias="0.99" />
+
+        <TextView
+            android:id="@+id/stret"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.02"
+            app:layout_constraintHorizontal_bias="0.02"
+
+            android:text="스트레칭"
+            android:textSize="30dp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            />
+
+        <TextView
+            android:id="@+id/part_choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.08"
+            app:layout_constraintHorizontal_bias="0.03"
+
+            android:text="어느 부위를 스트레칭하시겠어요?"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="#7f7f7a"
+            />
+
+        <!-- 아래 8개 박스 컨테이너 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cardContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/part_choice"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="0dp"
+            android:padding="16dp">
+
+            <!-- 1번 카드 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card1"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#f4f4f4"
+                app:strokeColor="#000000"
+                app:strokeWidth="1dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/card2"
+                app:layout_constraintDimensionRatio="1:0.7"
+                android:layout_marginEnd="8dp">
+
+                <!-- 내부 뷰 추가 가능 -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/titleText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="목, 어깨"
+                        android:textSize="15sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.6" />
+                    <TextView
+                        android:id="@+id/subText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="9개 동작"
+                        android:textSize="15sp"
+                        android:textColor="#555555"
+                        app:layout_constraintTop_toBottomOf="@id/titleText"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 2번 카드 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card2"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#f4f4f4"
+                app:strokeColor="#000000"
+                app:strokeWidth="1dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/card1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintDimensionRatio="1:0.7"
+                android:layout_marginStart="8dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/titleText2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="어깨"
+                        android:textSize="16sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.6" />
+                    <TextView
+                        android:id="@+id/subText2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4개 동작"
+                        android:textSize="15sp"
+                        android:textColor="#555555"
+                        app:layout_constraintTop_toBottomOf="@id/titleText2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 3번 카드 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card3"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#f4f4f4"
+                app:strokeColor="#000000"
+                app:strokeWidth="1dp"
+                app:layout_constraintTop_toBottomOf="@id/card1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/card4"
+                app:layout_constraintDimensionRatio="1:0.7"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="8dp">
+
+                <!-- 내부 뷰 추가 가능 -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/titleText3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="상체, 복부"
+                        android:textSize="16sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.6" />
+                    <TextView
+                        android:id="@+id/subText3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="6개 동작"
+                        android:textSize="15sp"
+                        android:textColor="#555555"
+                        app:layout_constraintTop_toBottomOf="@id/titleText3"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 4번 카드 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card4"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#f4f4f4"
+                app:strokeColor="#000000"
+                app:strokeWidth="1dp"
+                app:layout_constraintTop_toBottomOf="@id/card2"
+                app:layout_constraintStart_toEndOf="@id/card3"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintDimensionRatio="1:0.7"
+                android:layout_marginTop="30dp"
+                android:layout_marginStart="8dp">
+
+                <!-- 내부 뷰 추가 가능 -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/titleText4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="팔"
+                        android:textSize="16sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.6" />
+                    <TextView
+                        android:id="@+id/subText4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4개 동작"
+                        android:textSize="15sp"
+                        android:textColor="#555555"
+                        app:layout_constraintTop_toBottomOf="@id/titleText4"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 5번 카드 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card5"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#f4f4f4"
+                app:strokeColor="#000000"
+                app:strokeWidth="1dp"
+                app:layout_constraintTop_toBottomOf="@id/card3"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/card6"
+                app:layout_constraintDimensionRatio="1:0.7"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="8dp">
+
+                <!-- 내부 뷰 추가 가능 -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/titleText5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="골반, 허리"
+                        android:textSize="16sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.6" />
+                    <TextView
+                        android:id="@+id/subText5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="6개 동작"
+                        android:textSize="15sp"
+                        android:textColor="#555555"
+                        app:layout_constraintTop_toBottomOf="@id/titleText5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 6번 카드 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card6"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#f4f4f4"
+                app:strokeColor="#000000"
+                app:strokeWidth="1dp"
+                app:layout_constraintTop_toBottomOf="@id/card4"
+                app:layout_constraintStart_toEndOf="@id/card5"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintDimensionRatio="1:0.7"
+                android:layout_marginTop="30dp"
+                android:layout_marginStart="8dp">
+
+                <!-- 내부 뷰 추가 가능 -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/titleText6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="다리, 종아리"
+                        android:textSize="16sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.6" />
+                    <TextView
+                        android:id="@+id/subText6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="9개 동작"
+                        android:textSize="15sp"
+                        android:textColor="#555555"
+                        app:layout_constraintTop_toBottomOf="@id/titleText6"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 7번 카드 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card7"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#f4f4f4"
+                app:strokeColor="#000000"
+                app:strokeWidth="1dp"
+                app:layout_constraintTop_toBottomOf="@id/card5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/card8"
+                app:layout_constraintDimensionRatio="1:0.7"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="8dp">
+
+                <!-- 내부 뷰 추가 가능 -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/titleText7"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="발, 발목"
+                        android:textSize="16sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.6" />
+                    <TextView
+                        android:id="@+id/subText7"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="6개 동작"
+                        android:textSize="15sp"
+                        android:textColor="#555555"
+                        app:layout_constraintTop_toBottomOf="@id/titleText7"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 8번 카드 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card8"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#f4f4f4"
+                app:strokeColor="#000000"
+                app:strokeWidth="1dp"
+                app:layout_constraintTop_toBottomOf="@id/card6"
+                app:layout_constraintStart_toEndOf="@id/card7"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintDimensionRatio="1:0.7"
+                android:layout_marginTop="30dp"
+                android:layout_marginStart="8dp">
+
+                <!-- 내부 뷰 추가 가능 -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/titleText8"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="손, 손목"
+                        android:textSize="16sp"
+                        android:textColor="#000"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintVertical_bias="0.6" />
+                    <TextView
+                        android:id="@+id/subText8"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="6개 동작"
+                        android:textSize="15sp"
+                        android:textColor="#555555"
+                        app:layout_constraintTop_toBottomOf="@id/titleText8"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+
+
+
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>
