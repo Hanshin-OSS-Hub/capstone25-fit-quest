@@ -22,7 +22,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    build: ../backend
+    build: ../BackEnd
     command: >
       sh -c "
       until mysqladmin ping -h db -uroot -prootpassword --skip-ssl --silent; do
