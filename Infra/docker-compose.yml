@@ -9,7 +9,7 @@ services:
       MYSQL_PASSWORD: password123
       MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
-      - mysql_data: /var/lib/mysql
+      - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword"]
       interval: 5s
