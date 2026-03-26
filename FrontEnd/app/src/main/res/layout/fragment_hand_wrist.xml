@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nestedScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:paddingBottom="100dp"
+    tools:paddingBottom="0dp"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="true"
+    android:background="#ffffff"
+    tools:context=".Hand_wrist">
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+
+        android:id="@+id/hand_w"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+
+        <TextView
+            android:id="@+id/hend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.02"
+            app:layout_constraintHorizontal_bias="0.02"
+
+            android:text="손, 손목"
+            android:textSize="30dp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            />
+
+        <TextView
+            android:id="@+id/today"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.08"
+            app:layout_constraintHorizontal_bias="0.03"
+
+            android:text="스트레칭 루틴을 선택하세요"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="#7f7f7a"
+            />
+        <Button
+            android:id="@+id/go_stretching"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="&lt;- 뒤로"
+            android:backgroundTint="#FFFFFF"
+            android:textColor="#000000"
+            android:textSize="15dp"
+            android:textStyle="bold"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+
+            app:layout_constraintVertical_bias="0.02"
+            app:layout_constraintHorizontal_bias="0.99" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>
