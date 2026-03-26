@@ -8,6 +8,8 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: password123
       MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mysql_data: var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword"]
       interval: 5s
@@ -15,6 +17,9 @@ services:
       retries: 20
     networks:
       - fitquest-net
+      
+volumes: 
+  mysql_data:
 
   web:
     container_name: fitquest-backend-web
