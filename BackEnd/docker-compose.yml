@@ -17,6 +17,7 @@ services:
       - fitquest-net
       
   web:
+    restart: always
     depends_on:
       db:
         condition: service_healthy
@@ -43,6 +44,7 @@ services:
       - fitquest-net
 
   nginx:
+    restart: always
     image: nginx:latest
     container_name: fitquest-nginx
     ports:
