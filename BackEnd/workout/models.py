@@ -78,7 +78,9 @@ class Workout(models.Model):
     level = models.IntegerField(default=1)
     equipment = models.CharField(max_length=50, default='맨몸')
     duration_or_reps = models.CharField(max_length=50)
+    calories_per_minute = models.IntegerField(default=0, help_text="분당 소모 칼로리")
     
+
     def __str__(self):
         return self.name
 
@@ -86,7 +88,10 @@ class WorkoutLog(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)
     completed_at = models.DateTimeField(auto_now_add=True)
-
+    duration_minutes = models.IntegerField(default=0, help_text="운동 시간(분)")
+    calories_burned = models.IntegerField(default=0, help_text="소모 칼로리")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
 # 7. 영구 업적 시스템 
 class Achievement(models.Model):
     name = models.CharField(max_length=100)
