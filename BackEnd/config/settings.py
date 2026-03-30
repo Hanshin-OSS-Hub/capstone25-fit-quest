@@ -1,3 +1,6 @@
+import pymysql
+pymysql.install_as_MySQLdb()
+pymysql.version_info = (2, 2, 1, "final", 0)
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -161,13 +164,7 @@ CSRF_TRUSTED_ORIGINS = [
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ALLOWED_HOSTS = [
-    "fitquest25.xyz",
-    "www.fitquest25.xyz",
-    "localhost",
-    "127.0.0.1",
-    "0.0.0.0",
-    "fitquest-backend-web"
-
+    '*'
 ]
 
 

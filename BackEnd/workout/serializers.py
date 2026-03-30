@@ -132,6 +132,7 @@ class AchievementSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'metric', 
             'target_value', 'reward_title', 'is_achieved'
         ]
+        ref_name = 'WorkoutAchievement'
 
     def get_is_achieved(self, obj):
         request = self.context.get('request')

@@ -24,13 +24,13 @@ class SignupSerializer(serializers.ModelSerializer):
 
 # --- 내 정보 응답 ---
 class UserSerializer(serializers.ModelSerializer):
-    level = serializers.ReadOnlyField() 
-    monster_tier = serializers.ReadOnlyField() # 프로퍼티는 읽기 전용으로 명시
-    
+    level = serializers.ReadOnlyField()
+    monster_tier = serializers.ReadOnlyField()
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'nickname', 'level', 'exp', 'point','monster_tier','current_title']
-        read_only_fields = ['monster_tier']
+        fields = ['id', 'email', 'nickname', 'level', 'exp', 'point', 'monster_tier', 'current_title']
+        read_only_fields = ['level', 'monster_tier']
 
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = "email"
@@ -59,3 +59,4 @@ class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievement
         fields = '__all__'
+        ref_name = 'FitquestAchievement'
