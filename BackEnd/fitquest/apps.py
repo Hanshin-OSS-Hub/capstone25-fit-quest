@@ -1,9 +1,0 @@
-from django.apps import AppConfig
-
-
-class FitquestConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'fitquest'
-
-    def ready(self):
-        import fitquest.signals
