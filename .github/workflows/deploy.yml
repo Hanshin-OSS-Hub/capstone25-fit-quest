@@ -20,11 +20,24 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key.pem
+          sed -i 's/\r$//' ~/.ssh/ec2_key.pem
           chmod 600 ~/.ssh/ec2_key.pem
+
+      - name: Validate SSH key
+        run: |
+          ssh-keygen -y -f ~/.ssh/ec2_key.pem > /dev/null
 
       - name: Add EC2 to known_hosts
         run: |
           ssh-keyscan -p "$EC2_PORT" -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Test SSH connection
+        run: |
+          ssh -vvv -o StrictHostKeyChecking=no \
+              -i ~/.ssh/ec2_key.pem \
+              -p "$EC2_PORT" \
+              "$EC2_USER@$EC2_HOST" \
+              "echo connected"
 
       - name: Deploy to EC2
         run: |
