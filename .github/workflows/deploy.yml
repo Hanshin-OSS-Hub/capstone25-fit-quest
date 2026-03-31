@@ -20,4 +20,4 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           script: |
             chmod +x /home/ubuntu/capstone25-fit-quest/Infra/deploy.sh
-            /home/ubuntu/capstone25-fit-quest/Infra/deploy.sh
+            /home/ubuntu/capstone25-fit-quest/Infra/deploy.sh 
