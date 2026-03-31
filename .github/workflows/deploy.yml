@@ -32,17 +32,7 @@ jobs:
           ssh-keyscan -p "$EC2_PORT" -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
       - name: Test SSH connection
-        run: |
-          ssh -vvv -o StrictHostKeyChecking=no \
-              -i ~/.ssh/ec2_key.pem \
-              -p "$EC2_PORT" \
-              "$EC2_USER@$EC2_HOST" \
-              "echo connected"
+        run: ssh -vvv -o StrictHostKeyChecking=no -i ~/.ssh/ec2_key.pem -p "$EC2_PORT" "$EC2_USER@$EC2_HOST" "echo connected"
 
       - name: Deploy to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/ec2_key.pem \
-              -p "$EC2_PORT" \
-              "$EC2_USER@$EC2_HOST" \
-              'chmod +x /home/ubuntu/capstone25-fit-quest/Infra/deploy.sh && /home/ubuntu/capstone25-fit-quest/Infra/deploy.sh'
+        run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_key.pem -p "$EC2_PORT" "$EC2_USER@$EC2_HOST" "chmod +x /home/ubuntu/capstone25-fit-quest/Infra/deploy.sh && /home/ubuntu/capstone25-fit-quest/Infra/deploy.sh"
