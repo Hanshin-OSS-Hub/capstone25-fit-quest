@@ -6,6 +6,7 @@ from .views import (
     KakaoLoginView,
     AchievementListView,
     MyTitleListView,
+    RankingListView,
     
 )
 
@@ -15,5 +16,6 @@ urlpatterns = [
     path("me/", MeView.as_view(), name="me"),
     path("kakao/", KakaoLoginView.as_view(), name="kakao-login"),
     path('achievements/', AchievementListView.as_view()),
+    path('ranking/', RankingListView.as_view(), name='ranking'),
     path('titles/', MyTitleListView.as_view()),
 ]
