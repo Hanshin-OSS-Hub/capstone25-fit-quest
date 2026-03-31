@@ -250,6 +250,6 @@ class WorkoutListView(APIView):
 # ==========================================
 class AchievementListAPIView(generics.ListAPIView):
     """업적 목록 조회"""
-    queryset = Achievement.objects.all()
+    queryset = Achievement.objects.all().order_by('id')
     serializer_class = AchievementSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
