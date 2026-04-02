@@ -28,12 +28,15 @@ def calculate_user_achievement_metrics(user):
     total_duration = sum(int(s.duration_sec or 0) for s in running_sessions)
     total_calories = sum(float(s.calories_burned or 0) for s in running_sessions)
 
+    # 운동한 '서로 다른 날짜 수'
+    total_days = running_sessions.values_list("start_time__date", flat=True).distinct().count()
+
     return {
         "total_distance": total_distance,
         "total_duration": total_duration,
         "total_calories": total_calories,
+        "total_days": total_days,
     }
-
 
 def check_and_grant_achievements(user):
     metrics = calculate_user_achievement_metrics(user)
