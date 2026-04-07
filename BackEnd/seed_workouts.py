@@ -6,58 +6,145 @@ django.setup()
 
 from workout.models import Workout
 
-# 운동 데이터 리스트 
-workout_data = [
-    # 스트레칭 (Lv 1)
-    {"name": "목/어깨 롤링", "category": "stretching", "target_muscle": "상체", "level": 1, "equipment": "맨몸", "duration_or_reps": "1분"},
-    {"name": "고양이-소 자세", "category": "stretching", "target_muscle": "코어/등", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회"},
-    {"name": "코브라 자세", "category": "stretching", "target_muscle": "복부", "level": 1, "equipment": "맨몸", "duration_or_reps": "30초"},
-    {"name": "나비 자세", "category": "stretching", "target_muscle": "하체/골반", "level": 1, "equipment": "맨몸", "duration_or_reps": "1분"},
-    {"name": "햄스트링 늘리기", "category": "stretching", "target_muscle": "하체", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 30초"},
-    {"name": "전신 기지개 (아동 자세)", "category": "stretching", "target_muscle": "전신", "level": 1, "equipment": "맨몸", "duration_or_reps": "1분"},
+# 전체 운동 데이터
+grouped_workout_data = {
     
-    
-    # 근력 - 레벨 1
-    {"name": "인클라인 푸시업", "category": "strength", "target_muscle": "가슴/어깨", "level": 1, "equipment": "벽/책상", "duration_or_reps": "10회 3세트"},
-    {"name": "니 플랭크 (무릎 대고)", "category": "strength", "target_muscle": "코어", "level": 1, "equipment": "맨몸", "duration_or_reps": "20초 3세트"},
-    {"name": "하프 스쿼트", "category": "strength", "target_muscle": "하체", "level": 1, "equipment": "맨몸", "duration_or_reps": "15회 3세트"},
-    {"name": "브릿지 (엉덩이 들기)", "category": "strength", "target_muscle": "하체/허리", "level": 1, "equipment": "맨몸", "duration_or_reps": "15회 3세트"},
-    {"name": "버드독", "category": "strength", "target_muscle": "코어/전신", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 10회 3세트"},
-    {"name": "사이드 레그 레이즈", "category": "strength", "target_muscle": "골반/하체", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15회 3세트"},
-    
-    # 근력 - 레벨 2
-    {"name": "니 푸시업 (무릎 대고)", "category": "strength", "target_muscle": "가슴/어깨", "level": 2, "equipment": "맨몸", "duration_or_reps": "10회 3세트"},
-    {"name": "스탠다드 스쿼트", "category": "strength", "target_muscle": "하체", "level": 2, "equipment": "맨몸", "duration_or_reps": "15회 3세트"},
-    {"name": "스탠다드 플랭크", "category": "strength", "target_muscle": "코어", "level": 2, "equipment": "맨몸", "duration_or_reps": "30초 3세트"},
-    {"name": "크런치 (상복부)", "category": "strength", "target_muscle": "코어", "level": 2, "equipment": "맨몸", "duration_or_reps": "15회 3세트"},
-    {"name": "제자리 런지", "category": "strength", "target_muscle": "하체", "level": 2, "equipment": "맨몸", "duration_or_reps": "양쪽 10회 3세트"},
-    {"name": "슈퍼맨 맨몸 로우", "category": "strength", "target_muscle": "등/후면", "level": 2, "equipment": "맨몸", "duration_or_reps": "15회 3세트"},
-    
-    # 근력 - 레벨 3
-    {"name": "스탠다드 푸시업", "category": "strength", "target_muscle": "가슴/어깨", "level": 3, "equipment": "맨몸", "duration_or_reps": "10회 3세트"},
-    {"name": "와이드 스쿼트", "category": "strength", "target_muscle": "하체 안쪽", "level": 3, "equipment": "맨몸", "duration_or_reps": "15회 3세트"},
-    {"name": "사이드 플랭크", "category": "strength", "target_muscle": "코어 측면", "level": 3, "equipment": "맨몸", "duration_or_reps": "양쪽 20초 3세트"},
-    {"name": "체어 딥스", "category": "strength", "target_muscle": "삼두/어깨", "level": 3, "equipment": "의자", "duration_or_reps": "10회 3세트"},
-    {"name": "워킹 런지", "category": "strength", "target_muscle": "하체 전반", "level": 3, "equipment": "맨몸", "duration_or_reps": "양쪽 12회 3세트"},
-    {"name": "레그 레이즈 (하복부)", "category": "strength", "target_muscle": "코어", "level": 3, "equipment": "맨몸", "duration_or_reps": "15회 3세트"},
-    
-    # 근력 - 레벨 4
-    {"name": "파이크 푸시업", "category": "strength", "target_muscle": "어깨 집중", "level": 4, "equipment": "맨몸", "duration_or_reps": "10회 3세트"},
-    {"name": "불가리안 스플릿 스쿼트", "category": "strength", "target_muscle": "엉덩이/하체", "level": 4, "equipment": "의자", "duration_or_reps": "양쪽 10회 3세트"},
-    {"name": "덤벨 로우", "category": "strength", "target_muscle": "등", "level": 4, "equipment": "덤벨", "duration_or_reps": "12회 3세트"},
-    
-    # 근력 - 레벨 5
-    {"name": "디클라인 푸시업", "category": "strength", "target_muscle": "가슴 상부", "level": 5, "equipment": "의자", "duration_or_reps": "10회 3세트"},
-    {"name": "점프 스쿼트", "category": "strength", "target_muscle": "하체/파워", "level": 5, "equipment": "맨몸", "duration_or_reps": "15회 3세트"},
-    {"name": "할로우 홀드", "category": "strength", "target_muscle": "코어 끝판왕", "level": 5, "equipment": "맨몸", "duration_or_reps": "30초 3세트"}
-]
+    #  1. 스트레칭 (Level 1, 분당 2kcal)
+    "stretching": {
+        "neck": [
+            {"name": "목 측면 스트레칭", "target_muscle": "목", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "목 회전 스트레칭", "target_muscle": "목", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2},
+            {"name": "턱 당기기 (chin tuck)", "target_muscle": "목", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2},
+            {"name": "목 뒤로 젖히기", "target_muscle": "목", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2},
+            {"name": "상부 승모 스트레칭", "target_muscle": "목/승모", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "목 기울이기 스트레칭", "target_muscle": "목", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2}
+        ],
+        "shoulder": [
+            {"name": "암 서클", "target_muscle": "어깨", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2},
+            {"name": "크로스 바디 스트레칭", "target_muscle": "어깨", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "팔 뒤로 당기기", "target_muscle": "어깨", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "벽 밀기 어깨 스트레칭", "target_muscle": "어깨", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "오버헤드 스트레칭", "target_muscle": "어깨", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "어깨 회전 스트레칭", "target_muscle": "어깨", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2}
+        ],
+        "arm": [
+            {"name": "삼두 오버헤드 스트레칭", "target_muscle": "팔", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "이두 스트레칭 (벽)", "target_muscle": "팔", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "손목 굴곡 스트레칭", "target_muscle": "팔", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "손목 신전 스트레칭", "target_muscle": "팔", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "팔 스윙", "target_muscle": "팔", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2},
+            {"name": "삼두 뒤로 늘리기", "target_muscle": "팔", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2}
+        ],
+        "chest": [
+            {"name": "문틀 가슴 스트레칭", "target_muscle": "가슴", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "팔 뒤로 가슴 열기", "target_muscle": "가슴", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "벽 가슴 스트레칭", "target_muscle": "가슴", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "가슴 확장 스트레칭", "target_muscle": "가슴", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2},
+            {"name": "다이나믹 체스트 오프너", "target_muscle": "가슴", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2},
+            {"name": "인클라인 가슴 스트레칭", "target_muscle": "가슴", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2}
+        ],
+        "waist": [
+            {"name": "고양이-소 자세 (허리)", "target_muscle": "허리", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2},
+            {"name": "아동 자세 (허리)", "target_muscle": "허리", "level": 1, "equipment": "맨몸", "duration_or_reps": "20초", "calories_per_minute": 2},
+            {"name": "척추 트위스트", "target_muscle": "허리", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "코브라 스트레칭", "target_muscle": "허리", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "무릎 당기기", "target_muscle": "허리", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "골반 틸트", "target_muscle": "허리", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2}
+        ],
+        "back": [
+            {"name": "광배근 스트레칭 (오버헤드)", "target_muscle": "등", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "상체 전굴 스트레칭", "target_muscle": "등/허리", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "스레드 더 니들", "target_muscle": "등/견갑", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 10회", "calories_per_minute": 2},
+            {"name": "사이드 스트레칭 (광배)", "target_muscle": "등", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2}
+        ],
+        "leg": [
+            {"name": "햄스트링 스트레칭", "target_muscle": "다리", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "쿼드 스트레칭", "target_muscle": "다리", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "나비 자세", "target_muscle": "다리", "level": 1, "equipment": "맨몸", "duration_or_reps": "20초", "calories_per_minute": 2},
+            {"name": "종아리 스트레칭", "target_muscle": "다리", "level": 1, "equipment": "맨몸", "duration_or_reps": "15초", "calories_per_minute": 2},
+            {"name": "런지 스트레칭", "target_muscle": "다리", "level": 1, "equipment": "맨몸", "duration_or_reps": "양쪽 15초", "calories_per_minute": 2},
+            {"name": "사이드 런지 스트레칭", "target_muscle": "다리", "level": 1, "equipment": "맨몸", "duration_or_reps": "10회", "calories_per_minute": 2}
+        ]
+    },
 
-#  DB에 집어넣기
-print("운동 데이터 삽입을 시작합니다")
+    # 2. 근력 운동 (Level 1 ~ 5)
+    "strength": {
+        "level_1": [
+            {"name": "월 푸시업", "target_muscle": "가슴", "level": 1, "equipment": "맨몸", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "인클라인 푸시업", "target_muscle": "가슴/어깨", "level": 1, "equipment": "맨몸", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "하프 스쿼트", "target_muscle": "다리", "level": 1, "equipment": "맨몸", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "브릿지", "target_muscle": "다리/엉덩이", "level": 1, "equipment": "맨몸", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "니 플랭크", "target_muscle": "복근", "level": 1, "equipment": "맨몸", "duration_or_reps": "20초 3세트", "calories_per_minute": 4},
+            {"name": "슈퍼맨 홀드", "target_muscle": "등", "level": 1, "equipment": "맨몸", "duration_or_reps": "20초 3세트", "calories_per_minute": 4},
+            {"name": "덤벨 컬 (Lv1)", "target_muscle": "이두", "level": 1, "equipment": "덤벨", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "덤벨 숄더 프레스 (Lv1)", "target_muscle": "어깨", "level": 1, "equipment": "덤벨", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "덤벨 사이드 레터럴 레이즈 (Lv1)", "target_muscle": "어깨", "level": 1, "equipment": "덤벨", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "덤벨 슈러그 (Lv1)", "target_muscle": "승모", "level": 1, "equipment": "덤벨", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "덤벨 트라이셉 킥백", "target_muscle": "삼두", "level": 1, "equipment": "덤벨", "duration_or_reps": "7회 3세트", "calories_per_minute": 4},
+            {"name": "덤벨 카프 레이즈 (Lv1)", "target_muscle": "종아리", "level": 1, "equipment": "덤벨", "duration_or_reps": "7회 3세트", "calories_per_minute": 4}
+        ],
+        "level_2": [
+            {"name": "니 푸시업", "target_muscle": "가슴", "level": 2, "equipment": "맨몸", "duration_or_reps": "8회 3세트", "calories_per_minute": 5},
+            {"name": "스탠다드 스쿼트", "target_muscle": "다리", "level": 2, "equipment": "맨몸", "duration_or_reps": "8회 3세트", "calories_per_minute": 5},
+            {"name": "리버스 런지", "target_muscle": "다리", "level": 2, "equipment": "맨몸", "duration_or_reps": "양쪽 8회 3세트", "calories_per_minute": 5},
+            {"name": "플랭크", "target_muscle": "복근", "level": 2, "equipment": "맨몸", "duration_or_reps": "30초 3세트", "calories_per_minute": 5},
+            {"name": "슈퍼맨 풀", "target_muscle": "등", "level": 2, "equipment": "맨몸", "duration_or_reps": "8회 3세트", "calories_per_minute": 5},
+            {"name": "벤치 딥스", "target_muscle": "삼두", "level": 2, "equipment": "의자", "duration_or_reps": "8회 3세트", "calories_per_minute": 5},
+            {"name": "덤벨 벤치 프레스 (Lv2)", "target_muscle": "가슴", "level": 2, "equipment": "덤벨", "duration_or_reps": "8회 3세트", "calories_per_minute": 5},
+            {"name": "덤벨 벤트오버 로우 (Lv2)", "target_muscle": "등", "level": 2, "equipment": "덤벨", "duration_or_reps": "8회 3세트", "calories_per_minute": 5}
+        ],
+        "level_3": [
+            {"name": "스탠다드 푸시업", "target_muscle": "가슴", "level": 3, "equipment": "맨몸", "duration_or_reps": "10~12회 3세트", "calories_per_minute": 6},
+            {"name": "워킹 런지", "target_muscle": "다리", "level": 3, "equipment": "맨몸", "duration_or_reps": "양쪽 10회 3세트", "calories_per_minute": 6},
+            {"name": "사이드 플랭크", "target_muscle": "복근", "level": 3, "equipment": "맨몸", "duration_or_reps": "양쪽 20초 3세트", "calories_per_minute": 6},
+            {"name": "보조 풀업 (밴드/점프)", "target_muscle": "등", "level": 3, "equipment": "맨몸", "duration_or_reps": "5회 3세트", "calories_per_minute": 6},
+            {"name": "체어 딥스", "target_muscle": "삼두", "level": 3, "equipment": "의자", "duration_or_reps": "10회 3세트", "calories_per_minute": 6},
+            {"name": "덤벨 해머 컬", "target_muscle": "이두", "level": 3, "equipment": "덤벨", "duration_or_reps": "10회 3세트", "calories_per_minute": 6}
+        ],
+        "level_4": [
+            {"name": "디클라인 푸시업", "target_muscle": "가슴 상부", "level": 4, "equipment": "맨몸", "duration_or_reps": "10회 3세트", "calories_per_minute": 7},
+            {"name": "불가리안 스플릿 스쿼트", "target_muscle": "다리", "level": 4, "equipment": "맨몸", "duration_or_reps": "양쪽 10회 3세트", "calories_per_minute": 7},
+            {"name": "사이드 플랭크 레그 레이즈", "target_muscle": "복근/코어", "level": 4, "equipment": "맨몸", "duration_or_reps": "양쪽 10회 3세트", "calories_per_minute": 7},
+            {"name": "풀업 (정자세)", "target_muscle": "등", "level": 4, "equipment": "맨몸", "duration_or_reps": "6~10회 3세트", "calories_per_minute": 7},
+            {"name": "다이아몬드 푸시업", "target_muscle": "삼두", "level": 4, "equipment": "맨몸", "duration_or_reps": "10회 3세트", "calories_per_minute": 7},
+            {"name": "행잉 레그 레이즈", "target_muscle": "복근", "level": 4, "equipment": "맨몸", "duration_or_reps": "10회 3세트", "calories_per_minute": 7}
+        ],
+        "level_5": [
+            {"name": "원암 푸시업 (보조 포함)", "target_muscle": "가슴", "level": 5, "equipment": "맨몸", "duration_or_reps": "5회 3세트", "calories_per_minute": 9},
+            {"name": "피스톨 스쿼트", "target_muscle": "다리", "level": 5, "equipment": "맨몸", "duration_or_reps": "양쪽 6~8회 3세트", "calories_per_minute": 9},
+            {"name": "클랩 푸시업", "target_muscle": "가슴/파워", "level": 5, "equipment": "맨몸", "duration_or_reps": "6~10회 3세트", "calories_per_minute": 9},
+            {"name": "체스트 투 바 풀업", "target_muscle": "등", "level": 5, "equipment": "맨몸", "duration_or_reps": "6~10회 3세트", "calories_per_minute": 9},
+            {"name": "드래곤 플래그", "target_muscle": "코어", "level": 5, "equipment": "맨몸", "duration_or_reps": "5~8회 3세트", "calories_per_minute": 9},
+            {"name": "헤비 덤벨 로우", "target_muscle": "등", "level": 5, "equipment": "덤벨", "duration_or_reps": "8~10회 3세트", "calories_per_minute": 9}
+        ]
+    }
+}
+
+# DB에 집어넣기 로직 (자동으로 Flatten 처리)
+print("운동 데이터 삽입을 시작합니다...")
 count = 0
-for data in workout_data:
-    obj, created = Workout.objects.get_or_create(**data)
-    if created:
-        count += 1
 
-print(f" 총 {count}개의 운동 데이터가 성공적으로 DB에 저장되었습니다")
+# 상위 카테고리 (stretching, strength) 순회
+for category_name, sub_groups in grouped_workout_data.items():
+    
+    # 하위 그룹 (neck, shoulder, level_1 등) 순회
+    for group_name, workout_list in sub_groups.items():
+        
+        # 실제 개별 운동 데이터 순회
+        for data in workout_list:
+            
+            data["category"] = category_name
+            
+            # DB 삽입 또는 업데이트
+            obj, created = Workout.objects.get_or_create(
+                name=data["name"],
+                defaults=data
+            )
+            if created:
+                count += 1
+            else:
+                for key, value in data.items():
+                    setattr(obj, key, value)
+                obj.save()
+
+print(f" 총 {count}개의 새로운 운동 데이터가 성공적으로 DB에 저장되었습니다!")

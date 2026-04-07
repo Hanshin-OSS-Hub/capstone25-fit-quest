@@ -1,5 +1,6 @@
 # fitquest/views.py
 import requests
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from yaml import serializer
@@ -18,6 +19,7 @@ from .serializers import (
     UserSerializer,
     EmailTokenObtainPairSerializer,
     issue_tokens_for_user,
+    RankingUserSerializer,
 )
 from .models import SocialAccount
 
@@ -220,15 +222,13 @@ class MyTitleListView(APIView):
 
 # 경험치 기분 내림차순으로 전체 유저의 랭킹 정보 반환
 class RankingListView(APIView):
-
-    permission_classes = [permissions.AllowAny] # 랭킹은 로그인 안 해도 볼 수 있게 설정 (필요시 IsAuthenticated로 변경)
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        # 경험치(exp)가 높은 순서대로 유저들을 정렬해서 가져옵니다.
-        users = User.objects.all().order_by('-exp')
-        
-        # UserSerializer를 통해 닉네임, 경험치, 칭호, 레벨 등이 포함된 데이터를 생성합니다.
-        serializer = UserSerializer(users, many=True)
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        users = User.objects.exclude(
+            email=settings.MASTER_ACCOUNT_EMAIL
+        ).order_by("-exp", "id")
+
+        serializer = RankingUserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)  
 

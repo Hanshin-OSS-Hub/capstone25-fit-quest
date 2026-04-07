@@ -28,8 +28,15 @@ def calculate_user_achievement_metrics(user):
     total_duration = sum(int(s.duration_sec or 0) for s in running_sessions)
     total_calories = sum(float(s.calories_burned or 0) for s in running_sessions)
 
-    # 운동한 '서로 다른 날짜 수'
-    total_days = running_sessions.values_list("start_time__date", flat=True).distinct().count()
+    running_dates = set(
+        RunningSession.objects.filter(user=user)
+        .values_list("start_time__date", flat=True)
+    )
+    exercise_dates = set(
+        ExerciseLog.objects.filter(user=user)
+        .values_list("created_at__date", flat=True)
+    )
+    total_days = len(running_dates | exercise_dates)
 
     return {
         "total_distance": total_distance,
@@ -42,6 +49,7 @@ def check_and_grant_achievements(user):
     metrics = calculate_user_achievement_metrics(user)
     achievements = Achievement.objects.all()
     newly_achieved = []
+    gained_exp = 0
 
     for achievement in achievements:
         current_value = metrics.get(achievement.metric)
@@ -50,7 +58,7 @@ def check_and_grant_achievements(user):
             continue
 
         if float(current_value) >= float(achievement.target_value):
-            user_achievement, created = UserAchievement.objects.get_or_create(
+            _, created = UserAchievement.objects.get_or_create(
                 user=user,
                 achievement=achievement
             )
@@ -60,10 +68,16 @@ def check_and_grant_achievements(user):
                     "id": achievement.id,
                     "name": achievement.name,
                     "reward_title": achievement.reward_title,
+                    "reward_exp": getattr(achievement, "reward_exp", 0),
                 })
 
-    return newly_achieved
+                gained_exp += int(getattr(achievement, "reward_exp", 0) or 0)
 
+    if gained_exp > 0:
+        user.exp += gained_exp
+        user.save(update_fields=["exp"])
+
+    return newly_achieved
 
 # ==========================================
 # 1. 일반 운동 및 스트레칭
@@ -113,10 +127,11 @@ class RunningSessionListCreateView(generics.ListCreateAPIView):
 
         response_data = serializer.data
         response_data["new_achievements"] = newly_achieved
+        response_data["current_exp"] = request.user.exp
+        response_data["current_level"] = request.user.level
 
         headers = self.get_success_headers(serializer.data)
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
-
 
 class RunningSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
     """러닝 기록 상세 조회, 수정, 삭제"""
@@ -230,6 +245,8 @@ class HealthConnectRunningUploadView(APIView):
             "detail": "Health Connect data uploaded successfully",
             "id": session.id,
             "new_achievements": newly_achieved,
+            "current_exp": user.exp,
+            "current_level": user.level,
         }, status=201)
 
 
@@ -281,9 +298,7 @@ class ClaimQuestRewardAPIView(APIView):
         return Response({
             "detail": "보상 수령 완료!",
             "reward_xp": quest.reward_xp,
-            "reward_points": quest.reward_points,
             "total_exp": user.exp,
-            "total_point": user.point
         }, status=status.HTTP_200_OK)
 
 

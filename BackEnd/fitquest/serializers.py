@@ -2,6 +2,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from workout.models import Workout, Quest, Achievement, UserAchievement 
+from workout.models import RunningSession, ExerciseLog
+from django.utils import timezone
+from datetime import timedelta
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -26,12 +29,59 @@ class SignupSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     level = serializers.ReadOnlyField()
     monster_tier = serializers.ReadOnlyField()
+    attendance_days = serializers.SerializerMethodField()
+    streak_days = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'nickname', 'level', 'exp', 'point', 'monster_tier', 'current_title']
-        read_only_fields = ['level', 'monster_tier']
+        fields = ['id', 'email', 'nickname', 'level', 'exp', 'monster_tier', 'current_title','attendance_days', 'streak_days']
+        read_only_fields = ['level', 'monster_tier','attendance_days', 'streak_days']
+    
+    
+    def _get_activity_dates(self, obj):
+        running_dates = set(
+            RunningSession.objects.filter(user=obj)
+            .values_list("start_time__date", flat=True)
+        )
 
+        exercise_dates = set(
+            ExerciseLog.objects.filter(user=obj)
+            .values_list("created_at__date", flat=True)
+        )
+
+        all_dates = running_dates | exercise_dates
+        return sorted(all_dates, reverse=True)
+    
+
+    def get_attendance_days(self, obj):
+        return len(self._get_activity_dates(obj))
+    
+
+    def get_streak_days(self, obj):
+        dates = self._get_activity_dates(obj)
+
+        if not dates:
+            return 0
+
+        today = timezone.localdate()
+
+        if dates[0] == today:
+            expected = today
+        elif dates[0] == today - timedelta(days=1):
+            expected = today - timedelta(days=1)
+        else:
+            return 0
+
+        streak = 0
+        for d in dates:
+            if d == expected:
+                streak += 1
+                expected = expected - timedelta(days=1)
+            elif d < expected:
+                break
+
+        return streak
+    
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = "email"
 
@@ -60,3 +110,14 @@ class AchievementSerializer(serializers.ModelSerializer):
         model = Achievement
         fields = '__all__'
         ref_name = 'FitquestAchievement'
+
+
+#랭킹 전용 (이메일 제거)
+class RankingUserSerializer(serializers.ModelSerializer):
+    level = serializers.ReadOnlyField()
+    monster_tier = serializers.ReadOnlyField()
+
+    class Meta:
+        model = User
+        fields = ["id", "nickname", "level", "exp", "current_title", "monster_tier"]
+        read_only_fields = fields
