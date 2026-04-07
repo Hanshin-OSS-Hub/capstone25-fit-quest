@@ -3,11 +3,11 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from workout.models import Workout, Quest, Achievement, UserAchievement 
 from workout.models import RunningSession, ExerciseLog
-from django.utils import timezone
-from datetime import timedelta
+from datetime import date, timedelta
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 User = get_user_model()
 
 # --- 회원가입 ---
@@ -63,7 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
         if not dates:
             return 0
 
-        today = timezone.localdate()
+        today = date.today()
 
         if dates[0] == today:
             expected = today
