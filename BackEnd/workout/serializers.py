@@ -100,7 +100,7 @@ class UserQuestProgressSerializer(serializers.ModelSerializer):
         model = UserQuestProgress
         fields = [
             "id", "quest", "quest_name", "quest_desc", "target_value", 
-            "progress_value", "is_completed", "reward_xp",
+            "progress_value", "is_completed", "reward_xp", "is_reward_claimed",
             "cycle_key", "completed_at"
         ]
         read_only_fields = ["is_completed", "completed_at"]

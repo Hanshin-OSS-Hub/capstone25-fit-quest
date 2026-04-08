@@ -1,9 +1,14 @@
+from requests import session
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+import random
 from django.utils import timezone
-from datetime import timedelta
+from datetime import date, timedelta
 import logging
+
+from urllib3 import request
+
 
 # 로거 설정
 logger = logging.getLogger(__name__)
@@ -79,6 +84,50 @@ def check_and_grant_achievements(user):
 
     return newly_achieved
 
+def get_cycle_key(quest_type):
+    today = date.today()
+
+    if quest_type == "daily":
+        return today.strftime("%Y-%m-%d")
+    elif quest_type == "weekly":
+        return today.strftime("%Y-W%U")
+    elif quest_type == "monthly":
+        return today.strftime("%Y-%m")
+    return today.strftime("%Y-%m-%d")
+
+
+def update_user_quest_progress(user, distance_km=0, duration_sec=0, calories_burned=0):
+    cycle_keys = [
+        get_cycle_key("daily"),
+        get_cycle_key("weekly"),
+        get_cycle_key("monthly"),
+    ]
+
+    progresses = UserQuestProgress.objects.filter(
+        user=user,
+        cycle_key__in=cycle_keys
+    ).select_related("quest")
+
+    for progress in progresses:
+        if progress.is_completed:
+            continue
+
+        quest = progress.quest
+
+        if quest.metric == "distance":
+            progress.progress_value += float(distance_km or 0)
+        elif quest.metric == "duration":
+            progress.progress_value += float(duration_sec or 0)
+        elif quest.metric == "calories":
+            progress.progress_value += float(calories_burned or 0)
+
+        if float(progress.progress_value) >= float(quest.target_value):
+            progress.is_completed = True
+            if progress.completed_at is None:
+                progress.completed_at = timezone.now()
+
+        progress.save()
+
 # ==========================================
 # 1. 일반 운동 및 스트레칭
 # ==========================================
@@ -121,7 +170,18 @@ class RunningSessionListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         logger.debug(f"✅ [RunningSession] 프론트가 보낸 데이터: {self.request.data}")
-        serializer.save(user=request.user)
+        session = serializer.save(user=request.user)
+
+        new_distance = float(session.distance_km or 0)
+        new_duration = int(session.duration_sec or 0)
+        new_calories = int(session.calories_burned or 0)
+
+        update_user_quest_progress(
+            request.user,
+            distance_km=new_distance,
+            duration_sec=new_duration,
+            calories_burned=new_calories,
+        )
 
         newly_achieved = check_and_grant_achievements(request.user)
 
@@ -129,8 +189,8 @@ class RunningSessionListCreateView(generics.ListCreateAPIView):
         response_data["new_achievements"] = newly_achieved
         response_data["current_exp"] = request.user.exp
         response_data["current_level"] = request.user.level
-
         headers = self.get_success_headers(serializer.data)
+
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
 class RunningSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -239,6 +299,13 @@ class HealthConnectRunningUploadView(APIView):
             end_time=end_time
         )
 
+        update_user_quest_progress(
+            user,
+            distance_km=float(distance_km or 0),
+            duration_sec=int(duration_sec or 0),
+            calories_burned=float(calories or 0),
+        )
+
         newly_achieved = check_and_grant_achievements(user)
 
         return Response({
@@ -261,29 +328,77 @@ class AvailableQuestListAPIView(generics.ListAPIView):
 
 
 class UserQuestProgressListAPIView(generics.ListAPIView):
-    """내 퀘스트 진행도 확인"""
+    """내 퀘스트 진행도 확인 (없으면 자동 생성)"""
     serializer_class = UserQuestProgressSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return UserQuestProgress.objects.filter(user=self.request.user).order_by("-updated_at")
+        user = self.request.user
+        all_progress = []
 
+        for quest_type in ["daily", "weekly", "monthly"]:
+            cycle_key = get_cycle_key(quest_type)
+
+            existing = list(
+                UserQuestProgress.objects.filter(
+                    user=user,
+                    cycle_key=cycle_key,
+                    quest__quest_type=quest_type
+                ).select_related("quest")
+            )
+
+            if existing:
+                all_progress.extend(existing)
+                continue
+
+            candidates = list(
+                Quest.objects.filter(
+                    quest_type=quest_type,
+                    is_active=True
+                )
+            )
+
+            if not candidates:
+                continue
+
+            selected = random.sample(candidates, min(3, len(candidates)))
+
+            for quest in selected:
+                progress = UserQuestProgress.objects.create(
+                    user=user,
+                    quest=quest,
+                    progress_value=0,
+                    is_completed=False,
+                    cycle_key=cycle_key
+                )
+                all_progress.append(progress)
+
+        return sorted(all_progress, key=lambda x: x.id, reverse=True)
 
 class ClaimQuestRewardAPIView(APIView):
     """퀘스트 달성 보상 수령"""
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         try:
             progress = UserQuestProgress.objects.get(id=pk, user=request.user)
         except UserQuestProgress.DoesNotExist:
-            return Response({"detail": "존재하지 않거나 권한이 없는 퀘스트입니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "존재하지 않거나 권한이 없는 퀘스트입니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         if not progress.is_completed:
-            return Response({"detail": "아직 완료되지 않은 퀘스트입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "아직 완료되지 않은 퀘스트입니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if progress.completed_at is not None:
-            return Response({"detail": "이미 보상을 수령했습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        if progress.is_reward_claimed:
+            return Response(
+                {"detail": "이미 보상을 수령했습니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         user = request.user
         quest = progress.quest
@@ -292,13 +407,16 @@ class ClaimQuestRewardAPIView(APIView):
         user.point += quest.reward_points
         user.save()
 
-        progress.completed_at = timezone.now()
-        progress.save()
+        progress.is_reward_claimed = True
+        progress.save(update_fields=["is_reward_claimed"])
 
         return Response({
             "detail": "보상 수령 완료!",
             "reward_xp": quest.reward_xp,
+            "reward_points": quest.reward_points,
             "total_exp": user.exp,
+            "total_point": user.point,
+            "completed_at": progress.completed_at,
         }, status=status.HTTP_200_OK)
 
 
