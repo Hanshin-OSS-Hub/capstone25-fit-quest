@@ -48,16 +48,16 @@ quests = [
 
 for title, desc, q_type, metric, goal, xp, point in quests:
     Quest.objects.update_or_create(
-        title=title,
-        defaults={
-            "description": desc,
-            "quest_type": q_type,
-            "metric": metric,
-            "target_value": goal,
-            "reward_xp": xp,
-            "reward_points": point,
-            "is_active": True,
-        }
-    )
+    title=title,
+    quest_type=q_type,
+    metric=metric,
+    target_value=goal,
+    defaults={
+        "description": desc,
+        "reward_xp": xp,
+        "reward_points": point,
+        "is_active": True,
+    }
+)
 
 print("✅ Quest seed 완료")
