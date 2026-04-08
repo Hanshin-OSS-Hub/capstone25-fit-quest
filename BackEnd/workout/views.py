@@ -326,9 +326,8 @@ class AvailableQuestListAPIView(generics.ListAPIView):
     serializer_class = QuestSerializer
     permission_classes = [permissions.AllowAny]
 
-
 class UserQuestProgressListAPIView(generics.ListAPIView):
-    """내 퀘스트 진행도 확인 (없으면 자동 생성)"""
+    """내 퀘스트 진행도 확인 (없으면 자동 생성, 많으면 정리)"""
     serializer_class = UserQuestProgressSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -344,12 +343,28 @@ class UserQuestProgressListAPIView(generics.ListAPIView):
                     user=user,
                     cycle_key=cycle_key,
                     quest__quest_type=quest_type
-                ).select_related("quest")
+                ).select_related("quest").order_by("-id")
             )
 
-            if existing:
+            # 잘못 많이 들어간 데이터가 있으면 3개만 남기고 정리
+            if len(existing) > 3:
+                extra_ids = [p.id for p in existing[3:]]
+                UserQuestProgress.objects.filter(id__in=extra_ids).delete()
+                existing = existing[:3]
+
+            # 이미 3개가 있으면 그대로 사용
+            if len(existing) == 3:
                 all_progress.extend(existing)
                 continue
+
+            # 1개나 2개만 있는 애매한 상태면 다 지우고 새로 3개 생성
+            if 0 < len(existing) < 3:
+                UserQuestProgress.objects.filter(
+                    user=user,
+                    cycle_key=cycle_key,
+                    quest__quest_type=quest_type
+                ).delete()
+                existing = []
 
             candidates = list(
                 Quest.objects.filter(
@@ -369,6 +384,7 @@ class UserQuestProgressListAPIView(generics.ListAPIView):
                     quest=quest,
                     progress_value=0,
                     is_completed=False,
+                    is_reward_claimed=False,
                     cycle_key=cycle_key
                 )
                 all_progress.append(progress)
