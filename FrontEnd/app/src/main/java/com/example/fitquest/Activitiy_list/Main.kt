@@ -34,19 +34,18 @@ import java.time.format.DateTimeFormatter
 
 class Main : AppCompatActivity(), HomeFragment.RefreshListener {
 
-    private val TAG = "Health_test"
-    private val TAG_DATA = "ss_data"
-    private val TAG_SEND = "send_data"
+    private val TAG       = "Health_test"
+    private val TAG_DATA  = "ss_data"
+    private val TAG_SEND  = "send_data"
     private val TAG_STATS = "running_stats"
-    private val TAG_INFO = "user_info"
-    private val TAG_DUP = "dup_check"
+    private val TAG_INFO  = "user_info"
+    private val TAG_DUP   = "dup_check"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main)
 
-        lifecycleScope.launch { readAndSendHealthData() }
-        lifecycleScope.launch { getUserInfo() }
+        replaceFragment(HomeFragment())
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         replaceFragment(HomeFragment())
@@ -54,26 +53,43 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
         bottomNav.selectedItemId = R.id.home
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.running -> replaceFragment(RunningFragment())
+                R.id.running  -> replaceFragment(RunningFragment())
                 R.id.exercise -> replaceFragment(ExerciseFragment())
-                R.id.home -> replaceFragment(HomeFragment())
-                R.id.quest -> replaceFragment(QuestFragment())
-                R.id.ranking -> replaceFragment(RankingFragment())
+                R.id.home     -> replaceFragment(HomeFragment())
+                R.id.quest    -> replaceFragment(QuestFragment())
+                R.id.ranking  -> replaceFragment(RankingFragment())
             }
             true
         }
+        lifecycleScope.launch {
+            readAndSendHealthData()
+            notifyHomeFragment()
+        }
+        lifecycleScope.launch { getUserInfo() }
     }
 
     override fun onRefreshRequested() {
-        lifecycleScope.launch { readAndSendHealthData() }
+        lifecycleScope.launch {
+            readAndSendHealthData()
+            notifyHomeFragment()
+        }
+    }
+
+    // ★ 현재 표시 중인 HomeFragment에 갱신 요청
+    private fun notifyHomeFragment() {
+        supportFragmentManager.fragments.forEach { fragment ->
+            if (fragment is HomeFragment && fragment.isAdded && !fragment.isDetached) {
+                runOnUiThread { fragment.refreshStats() }
+                return
+            }
+        }
     }
 
     private suspend fun getUserInfo() {
         val sharedPref = getSharedPreferences("FitQuestPrefs", MODE_PRIVATE)
         val accessToken = sharedPref.getString("access_token", "") ?: ""
-
         try {
-            val response = userApi.getMe("Bearer $accessToken")
+            val response    = userApi.getMe("Bearer $accessToken")
             val responseStr = response.string()
             Log.i(TAG_INFO, "사용자 정보: $responseStr")
             sharedPref.edit().putString("user_info", responseStr).apply()
@@ -85,19 +101,18 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
     private suspend fun getRunningStats() {
         val sharedPref = getSharedPreferences("FitQuestPrefs", MODE_PRIVATE)
         val accessToken = sharedPref.getString("access_token", "") ?: ""
-
         try {
-            val response = statsApi.getRunningList("Bearer $accessToken")
-            val responseStr = response.string()          // ← 이렇게 변수에 담고
+            val response    = statsApi.getRunningList("Bearer $accessToken")
+            val responseStr = response.string()
             Log.i(TAG_STATS, "러닝 기록: $responseStr")
-            sharedPref.edit().putString("running_stats_data", responseStr).apply()  // ← 저장 추가
+            sharedPref.edit().putString("running_stats_data", responseStr).apply()
         } catch (e: Exception) {
             Log.e(TAG_STATS, "❌ 오류: ${e.message}")
         }
     }
 
     private suspend fun readAndSendHealthData() {
-        val sharedPref = getSharedPreferences("FitQuestPrefs", MODE_PRIVATE)
+        val sharedPref  = getSharedPreferences("FitQuestPrefs", MODE_PRIVATE)
         val accessToken = sharedPref.getString("access_token", "") ?: ""
 
         sharedPref.edit().remove("today_sessions").apply()
@@ -109,6 +124,22 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
             return
         }
 
+        // 유저 ID 추출
+        val userInfo = sharedPref.getString("user_info", null)
+        val userId = if (userInfo != null) {
+            try { JSONObject(userInfo).optInt("id", -1) } catch (e: Exception) { -1 }
+        } else -1
+
+        if (userId == -1) {
+            Log.e(TAG, "❌ 유저 ID 없음 - 전송 중단")
+            getRunningStats()
+            return
+        }
+
+        val sentSessionsKey = "sent_sessions_$userId"  // ★ 계정별 키
+        Log.i(TAG, "토큰: $accessToken / 유저ID: $userId")
+
+
         val sdkStatus = HealthConnectClient.getSdkStatus(this)
         if (sdkStatus != HealthConnectClient.SDK_AVAILABLE) {
             Log.e(TAG, "❌ Health Connect 사용 불가")
@@ -117,70 +148,55 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
 
         val client = HealthConnectClient.getOrCreate(this)
 
-        val today = LocalDate.now()
+        val today      = LocalDate.now()
         val startOfDay = today.atStartOfDay(ZoneId.systemDefault()).toInstant()
-        val endOfDay = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
-        val timeRange = TimeRangeFilter.between(startOfDay, endOfDay)
+        val endOfDay   = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
+        val timeRange  = TimeRangeFilter.between(startOfDay, endOfDay)
 
         try {
             val exerciseResponse = client.readRecords(
-                ReadRecordsRequest(
-                    recordType = ExerciseSessionRecord::class,
-                    timeRangeFilter = timeRange
-                )
+                ReadRecordsRequest(recordType = ExerciseSessionRecord::class, timeRangeFilter = timeRange)
             )
 
             if (exerciseResponse.records.isEmpty()) {
                 Log.e(TAG, "❌ 오늘 운동 기록 없음")
+                getRunningStats()   // 운동 없어도 최신 통계는 가져옴
                 return
             }
 
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-                .withZone(ZoneId.of("UTC"))
-
-            val sentSessions = sharedPref.getStringSet("sent_sessions", mutableSetOf()) ?: mutableSetOf()
+            val formatter    = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
+            val sentSessionsKey = "sent_sessions_$userId"
+            val sentSessions = sharedPref.getStringSet(sentSessionsKey, mutableSetOf()) ?: mutableSetOf()
 
             for ((index, session) in exerciseResponse.records.withIndex()) {
                 val sessionStart = session.startTime
-                val sessionEnd = session.endTime
-                val durationSec = (sessionEnd.epochSecond - sessionStart.epochSecond).toInt()
+                val sessionEnd   = session.endTime
+                val durationSec  = (sessionEnd.epochSecond - sessionStart.epochSecond).toInt()
 
                 val distanceResponse = client.readRecords(
-                    ReadRecordsRequest(
-                        recordType = DistanceRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(sessionStart, sessionEnd)
-                    )
+                    ReadRecordsRequest(DistanceRecord::class, TimeRangeFilter.between(sessionStart, sessionEnd))
                 )
                 val distanceKm = distanceResponse.records.sumOf { it.distance.inKilometers }
 
                 val calorieResponse = client.readRecords(
-                    ReadRecordsRequest(
-                        recordType = TotalCaloriesBurnedRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(sessionStart, sessionEnd)
-                    )
+                    ReadRecordsRequest(TotalCaloriesBurnedRecord::class, TimeRangeFilter.between(sessionStart, sessionEnd))
                 )
                 val calories = calorieResponse.records.sumOf { it.energy.inKilocalories }
-
-                val avgPace = if (distanceKm > 0) (durationSec / 60.0) / distanceKm else 0.0
+                val avgPace  = if (distanceKm > 0) (durationSec / 60.0) / distanceKm else 0.0
 
                 val startTimeStr = formatter.format(sessionStart)
-                val endTimeStr = formatter.format(sessionEnd)
+                val endTimeStr   = formatter.format(sessionEnd)
+                val sessionKey = "${startTimeStr}_${distanceKm}_${durationSec}"
 
                 Log.i(TAG_DATA, "===== 세션 ${index + 1} 데이터 =====")
-                Log.i(TAG_DATA, "distance_km: $distanceKm")
-                Log.i(TAG_DATA, "duration_sec: $durationSec")
-                Log.i(TAG_DATA, "avg_pace_min_per_km: $avgPace")
-                Log.i(TAG_DATA, "current_pace_min_per_km: $avgPace")
-                Log.i(TAG_DATA, "calories_burned: $calories")
-                Log.i(TAG_DATA, "start_time: $startTimeStr")
-                Log.i(TAG_DATA, "end_time: $endTimeStr")
+                Log.i(TAG_DATA, "distance_km: $distanceKm / duration_sec: $durationSec / calories: $calories")
 
                 if (distanceKm <= 0.0) {
                     Log.i(TAG, "세션 ${index + 1} 스킵 - 거리 0")
                     continue
                 }
 
-                // ===== 오늘 세션 저장 (홈 화면 표시용) =====
+                // 오늘 세션 저장
                 val sessionJson = JSONObject().apply {
                     put("distance_km", distanceKm)
                     put("duration_sec", durationSec)
@@ -189,49 +205,35 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
                     put("end_time", endTimeStr)
                     put("avg_pace", avgPace)
                 }
-                val existingStr = sharedPref.getString("today_sessions", "[]")
+                val existingStr   = sharedPref.getString("today_sessions", "[]")
                 val existingArray = JSONArray(existingStr)
-                var alreadySaved = false
+                var alreadySaved  = false
                 for (i in 0 until existingArray.length()) {
                     if (existingArray.getJSONObject(i).optString("start_time") == startTimeStr) {
-                        alreadySaved = true
-                        break
+                        alreadySaved = true; break
                     }
                 }
                 if (!alreadySaved) {
                     existingArray.put(sessionJson)
                     sharedPref.edit().putString("today_sessions", existingArray.toString()).apply()
-                    Log.i(TAG, "✅ 세션 저장 완료: $startTimeStr")
-                    Log.i(TAG, "저장된 세션 수: ${existingArray.length()}")
+                    Log.i(TAG, "✅ 세션 저장 완료: $startTimeStr / 세션 수: ${existingArray.length()}")
                 }
-                // ===== 세션 저장 끝 =====
 
-                // ===== 중복 전송 방지 시작 =====
-                if (sentSessions.contains(startTimeStr)) {
-                    Log.i(TAG_DUP, "세션 ${index + 1} 이미 전송됨 - 스킵: $startTimeStr")
+                // 중복 전송 방지
+                if (sentSessions.contains(sessionKey)) {
+                    Log.i(TAG_DUP, "세션 ${index + 1} 이미 전송됨 - 스킵: $sessionKey")
                     continue
                 }
-                Log.i(TAG_DUP, "세션 ${index + 1} 새로운 기록 - 전송 진행: $startTimeStr")
-                // ===== 중복 전송 방지 끝 =====
 
                 val requestData = RunningSessionRequest(
-                    distance_km = distanceKm,
-                    duration_sec = durationSec,
-                    avg_pace_min_per_km = avgPace,
+                    distance_km             = distanceKm,
+                    duration_sec            = durationSec,
+                    avg_pace_min_per_km     = avgPace,
                     current_pace_min_per_km = avgPace,
-                    calories_burned = calories,
-                    start_time = startTimeStr,
-                    end_time = endTimeStr
+                    calories_burned         = calories,
+                    start_time              = startTimeStr,
+                    end_time                = endTimeStr
                 )
-
-                Log.i(TAG_SEND, "===== 세션 ${index + 1} 전송 데이터 =====")
-                Log.i(TAG_SEND, "distance_km: ${requestData.distance_km}")
-                Log.i(TAG_SEND, "duration_sec: ${requestData.duration_sec}")
-                Log.i(TAG_SEND, "avg_pace_min_per_km: ${requestData.avg_pace_min_per_km}")
-                Log.i(TAG_SEND, "current_pace_min_per_km: ${requestData.current_pace_min_per_km}")
-                Log.i(TAG_SEND, "calories_burned: ${requestData.calories_burned}")
-                Log.i(TAG_SEND, "start_time: ${requestData.start_time}")
-                Log.i(TAG_SEND, "end_time: ${requestData.end_time}")
 
                 Log.i(TAG, "===== 세션 ${index + 1} 전송 시작 =====")
                 try {
@@ -239,14 +241,12 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
                     Log.i(TAG, "응답 코드: ${response.code()}")
                     if (response.isSuccessful) {
                         Log.i(TAG, "✅ 전송 성공!")
-                        val updatedSessions = sentSessions.toMutableSet()
-                        updatedSessions.add(startTimeStr)
-                        sharedPref.edit().putStringSet("sent_sessions", updatedSessions).apply()
-                        Log.i(TAG_DUP, "전송 완료 저장: $startTimeStr")
+                        val updated = sentSessions.toMutableSet()
+                        updated.add(sessionKey)
+                        sharedPref.edit().putStringSet(sentSessionsKey, updated).apply()
+                        Log.i(TAG_DUP, "전송 완료 저장: $sessionKey")
                     } else {
-                        Log.e(TAG, "❌ 전송 실패")
-                        Log.e(TAG, "실패 코드: ${response.code()}")
-                        Log.e(TAG, "실패 메시지: ${response.errorBody()?.string()}")
+                        Log.e(TAG, "❌ 전송 실패 ${response.code()}: ${response.errorBody()?.string()}")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ 네트워크 오류: ${e.message}")
@@ -260,6 +260,7 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
             Log.e(TAG, "❌ 오류: ${e.message}")
         }
 
+        // ★ 모든 전송 완료 후 통계 갱신 (순서 보장)
         getRunningStats()
     }
 
@@ -270,35 +271,15 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
             .build()
     }
 
-    private val api by lazy { retrofit.create(RunningApi::class.java) }
-    private val userApi by lazy { retrofit.create(UserApi::class.java) }
+    private val api      by lazy { retrofit.create(RunningApi::class.java) }
+    private val userApi  by lazy { retrofit.create(UserApi::class.java) }
     private val statsApi by lazy { retrofit.create(StatsApi::class.java) }
 
-    private fun replaceFragment(fragment: RunningFragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.main_layout, fragment)
-        transaction.commit()
-    }
-    private fun replaceFragment(fragment: ExerciseFragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.main_layout, fragment)
-        transaction.commit()
-    }
-    private fun replaceFragment(fragment: HomeFragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.main_layout, fragment)
-        transaction.commit()
-    }
-    private fun replaceFragment(fragment: QuestFragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.main_layout, fragment)
-        transaction.commit()
-    }
-    private fun replaceFragment(fragment: RankingFragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.main_layout, fragment)
-        transaction.commit()
-    }
+    private fun replaceFragment(fragment: RunningFragment)  { supportFragmentManager.beginTransaction().replace(R.id.main_layout, fragment).commit() }
+    private fun replaceFragment(fragment: ExerciseFragment) { supportFragmentManager.beginTransaction().replace(R.id.main_layout, fragment).commit() }
+    private fun replaceFragment(fragment: HomeFragment)     { supportFragmentManager.beginTransaction().replace(R.id.main_layout, fragment).commit() }
+    private fun replaceFragment(fragment: QuestFragment)    { supportFragmentManager.beginTransaction().replace(R.id.main_layout, fragment).commit() }
+    private fun replaceFragment(fragment: RankingFragment)  { supportFragmentManager.beginTransaction().replace(R.id.main_layout, fragment).commit() }
 }
 
 data class RunningSessionRequest(
@@ -312,7 +293,7 @@ data class RunningSessionRequest(
 )
 
 interface RunningApi {
-    @POST("api/workout/running/hc/")
+    @POST("api/workout/running/")
     suspend fun sendRunningSession(
         @Header("Authorization") token: String,
         @Body request: RunningSessionRequest
@@ -321,14 +302,10 @@ interface RunningApi {
 
 interface UserApi {
     @GET("api/auth/me/")
-    suspend fun getMe(
-        @Header("Authorization") token: String
-    ): ResponseBody
+    suspend fun getMe(@Header("Authorization") token: String): ResponseBody
 }
 
 interface StatsApi {
     @GET("api/workout/running/stats/")
-    suspend fun getRunningList(
-        @Header("Authorization") token: String
-    ): ResponseBody
+    suspend fun getRunningList(@Header("Authorization") token: String): ResponseBody
 }
