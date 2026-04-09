@@ -31,95 +31,93 @@
                 android:textColor="#000000"
                 android:paddingBottom="12dp" />
 
-            <!-- 한 줄: Lv1 ~ Lv5 -->
+            <!-- 1행: Lv1 / Lv2 / Lv3 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
 
                 <Button
                     android:id="@+id/btn_lv1"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Lv.1"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textColor="#ffffff"
                     android:backgroundTint="#4CAF50"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="0dp"
-                    app:cornerRadius="18dp"
+                    app:cornerRadius="20dp"
                     android:layout_marginEnd="4dp"
                     xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
                 <Button
                     android:id="@+id/btn_lv2"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Lv.2"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textColor="#ffffff"
                     android:backgroundTint="#2196F3"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="0dp"
-                    app:cornerRadius="18dp"
+                    app:cornerRadius="20dp"
+                    android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
                 <Button
                     android:id="@+id/btn_lv3"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Lv.3"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textColor="#ffffff"
                     android:backgroundTint="#FF9800"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="0dp"
-                    app:cornerRadius="18dp"
-                    android:layout_marginEnd="4dp"
+                    app:cornerRadius="20dp"
+                    android:layout_marginStart="4dp"
                     xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
+            </LinearLayout>
+
+            <!-- 2행: Lv4 / Lv5 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btn_lv4"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Lv.4"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textColor="#ffffff"
                     android:backgroundTint="#F44336"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="0dp"
-                    app:cornerRadius="18dp"
+                    app:cornerRadius="20dp"
                     android:layout_marginEnd="4dp"
                     xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
                 <Button
                     android:id="@+id/btn_lv5"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Lv.5"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textColor="#ffffff"
                     android:backgroundTint="#9C27B0"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="0dp"
-                    app:cornerRadius="18dp"
+                    app:cornerRadius="20dp"
+                    android:layout_marginStart="4dp"
                     xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
+                <!-- 빈 공간 (레이아웃 균형) -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"/>
 
             </LinearLayout>
         </LinearLayout>

@@ -262,14 +262,22 @@
                     android:shadowDy="1"
                     android:shadowRadius="4" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_refresh"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔄"
-                    android:textSize="26sp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:text="새로고침"
+                    android:textSize="12sp"
+                    android:textColor="#000000"
+                    android:backgroundTint="#ffffff"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    app:strokeColor="#000000"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="20dp" />
 
             </LinearLayout>
 

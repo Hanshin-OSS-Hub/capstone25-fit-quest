@@ -33,9 +33,7 @@ class QuestFragment : Fragment() {
     // 전체 퀘스트 데이터 (cycle 기준으로 분류)
     private val allQuests = mutableListOf<JSONObject>()
 
-    private var currentTab = "daily"
-    private var lastLoadedDate: String = ""
-    private var currentWeekKey: String = "" // 서버 응답에서 추출한 이번 주 cycle_key
+    private var currentTab = "daily" // "daily" | "weekly" | "monthly"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,22 +78,12 @@ class QuestFragment : Fragment() {
             renderQuestCards()
         }
 
-        // 테스트 버튼: 퀘스트 강제 재로드 + cycle_key 로그 출력
-        view.findViewById<Button>(R.id.btn_test_quest_api).setOnClickListener {
-            lastLoadedDate = "" // 강제 초기화 → 날짜 무관하게 재조회
-            fetchMyQuests()
-        }
-
         fetchMyQuests()
     }
 
     override fun onResume() {
         super.onResume()
-        val todayStr = java.time.LocalDate.now().toString()
-        // 날짜가 바뀌었거나 아직 한 번도 로드 안 한 경우에만 API 재조회
-        if (todayStr != lastLoadedDate) {
-            fetchMyQuests()
-        }
+        fetchMyQuests()
     }
 
     // ──────────────────────────────────────────
@@ -123,24 +111,9 @@ class QuestFragment : Fragment() {
                     for (i in 0 until arr.length()) {
                         allQuests.add(arr.getJSONObject(i))
                     }
-                    // 서버 응답에서 이번 주 cycle_key 직접 추출 (YYYY-WXX 형식)
-                    currentWeekKey = allQuests
-                        .map { it.optString("cycle_key", "") }
-                        .firstOrNull { it.matches(Regex("\\d{4}-W\\d{2}")) } ?: ""
-                    lastLoadedDate = java.time.LocalDate.now().toString()
-
-                    // ── 디버그: 받은 cycle_key 전체 출력 ──
-                    val today = java.time.LocalDate.now()
-                    Log.i("quest_cycle", "===== cycle_key 목록 (총 ${allQuests.size}개) =====")
-                    Log.i("quest_cycle", "앱 계산값 -> daily:$today / weekly:$currentWeekKey / monthly:${buildMonthKey(today)}")
-                    for (q in allQuests) {
-                        Log.i("quest_cycle", "id=${q.optInt("id")} | cycle_key=[${q.optString("cycle_key")}] | ${q.optString("quest_name")}")
-                    }
-                    Log.i("quest_cycle", "===========================================")
-
                     updateAchievementStats()
                     renderQuestCards()
-                    Log.i("QuestFragment", "퀘스트 ${allQuests.size}개 로드 완료 (날짜: $lastLoadedDate)")
+                    Log.i("QuestFragment", "퀘스트 ${allQuests.size}개 로드 완료")
                 } catch (e: Exception) {
                     Log.e("QuestFragment", "파싱 오류: ${e.message}")
                     showError("퀘스트를 불러오지 못했습니다.")
@@ -176,25 +149,26 @@ class QuestFragment : Fragment() {
     //  달성률 통계 업데이트
     // ──────────────────────────────────────────
     private fun updateAchievementStats() {
-        val today      = java.time.LocalDate.now()
-        val todayStr   = today.toString()
-        val weekStr    = currentWeekKey
-        val monthStr   = buildMonthKey(today)
+        val today   = java.time.LocalDate.now()
+        val todayStr   = today.toString()                          // 2026-04-08
+        val weekStr    = "2026-W${today.get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear())
+            .toString().padStart(2, '0')}"  // 2026-W14
+        val monthStr   = "${today.year}-${today.monthValue.toString().padStart(2, '0')}" // 2026-04
 
         var dailyTotal = 0; var dailyDone = 0
         var weeklyTotal = 0; var weeklyDone = 0
         var monthlyTotal = 0; var monthlyDone = 0
 
         for (q in allQuests) {
-            val cycleKey    = q.optString("cycle_key", "")
+            val cycleKey   = q.optString("cycle_key", "")
             val isCompleted = q.optBoolean("is_completed", false)
             val isClaimed   = q.optBoolean("is_reward_claimed", false)
             val counted     = isCompleted || isClaimed
 
             when {
                 cycleKey == todayStr -> { dailyTotal++; if (counted) dailyDone++ }
-                cycleKey == weekStr  -> { weeklyTotal++; if (counted) weeklyDone++ }
-                cycleKey == monthStr -> { monthlyTotal++; if (counted) monthlyDone++ }
+                cycleKey.startsWith("2026-W") -> { weeklyTotal++; if (counted) weeklyDone++ }
+                cycleKey.length == 7 -> { monthlyTotal++; if (counted) monthlyDone++ }
             }
         }
 
@@ -219,8 +193,10 @@ class QuestFragment : Fragment() {
 
         val today    = java.time.LocalDate.now()
         val todayStr = today.toString()
-        val weekStr  = currentWeekKey
-        val monthStr = buildMonthKey(today)
+        val weekNum  = today.get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear())
+            .toString().padStart(2, '0')
+        val weekStr  = "${today.year}-W$weekNum"
+        val monthStr = "${today.year}-${today.monthValue.toString().padStart(2, '0')}"
 
         val filtered = allQuests.filter { q ->
             val cycleKey = q.optString("cycle_key", "")
@@ -451,19 +427,6 @@ class QuestFragment : Fragment() {
             Method.POST, url,
             { response ->
                 Log.i("QuestFragment", "클레임 성공: $response")
-
-                val sharedPref = requireActivity().getSharedPreferences("FitQuestPrefs", Context.MODE_PRIVATE)
-                val userInfo = sharedPref.getString("user_info", null)
-                val userId = if (userInfo != null) {
-                    try { JSONObject(userInfo).optInt("id", -1) } catch (e: Exception) { -1 }
-                } else -1
-
-                if (userId != -1) {
-                    val key = "total_quests_claimed_$userId"
-                    val current = sharedPref.getInt(key, 0)
-                    sharedPref.edit().putInt(key, current + 1).apply()
-                }
-
                 activity?.runOnUiThread {
                     btn.text = "완료"
                     btn.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#9e9f9d"))
@@ -546,15 +509,6 @@ class QuestFragment : Fragment() {
         }
         selected.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.BLACK)
         selected.setTextColor(Color.WHITE)
-    }
-
-    // ──────────────────────────────────────────
-    //  cycle_key 생성 헬퍼
-    // ──────────────────────────────────────────
-
-    /** 서버의 월간 cycle_key 형식: 2026-04 */
-    private fun buildMonthKey(date: java.time.LocalDate): String {
-        return "${date.year}-${date.monthValue.toString().padStart(2, '0')}"
     }
 
     private fun applyFont(view: View, typeface: Typeface?) {
