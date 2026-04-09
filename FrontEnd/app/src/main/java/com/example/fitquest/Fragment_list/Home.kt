@@ -132,6 +132,7 @@ class HomeFragment : Fragment() {
         handler.post(quoteRunnable)
         fetchUserInfo()
         fetchRunningStats()
+        updateQuestCount()
     }
 
     override fun onPause() {
@@ -142,6 +143,18 @@ class HomeFragment : Fragment() {
     fun refreshStats() {
         fetchUserInfo()
         fetchRunningStats()
+        updateQuestCount()
+    }
+    // 퀘스트 카운팅
+    private fun updateQuestCount() {
+        val sharedPref = requireActivity().getSharedPreferences("FitQuestPrefs", Context.MODE_PRIVATE)
+        val userInfo = sharedPref.getString("user_info", null)
+        val userId = if (userInfo != null) {
+            try { JSONObject(userInfo).optInt("id", -1) } catch (e: Exception) { -1 }
+        } else -1
+
+        val count = if (userId != -1) sharedPref.getInt("total_quests_claimed_$userId", 0) else 0
+        view?.findViewById<TextView>(R.id.tv_quest_count)?.text = "${count}개"
     }
 
     private fun fetchUserInfo() {
@@ -164,6 +177,7 @@ class HomeFragment : Fragment() {
                     val level    = json.optInt("level", 1)
                     val exp      = json.optInt("exp", 0)
                     val title    = json.optString("current_title", "")
+                    val streakDays = json.optInt("streak_days", 0)
 
                     // 유저 변경 감지 → 누적기록 캐시 초기화
                     val cachedInfo = sharedPref.getString("user_info", null)
@@ -190,6 +204,7 @@ class HomeFragment : Fragment() {
                     tvTitle.text         = if (title.isEmpty() || title == "null") "[칭호 없음]" else "[$title]"
                     tvExp.text           = "EXP $exp / 100"
                     expProgress.progress = exp
+                    view?.findViewById<TextView>(R.id.tv_streak)?.text = "${streakDays + 1}일"
 
                     fetchAchievementCount()
                     fetchUserRanking()
@@ -205,7 +220,7 @@ class HomeFragment : Fragment() {
                     try {
                         val json  = JSONObject(cached)
                         val title = json.optString("current_title", "")
-                        val streakDays  = json.optInt("streak_days", 0)
+                        val streakDays = json.optInt("streak_days", 0)
 
                         tvUsername.text      = json.optString("nickname", "사용자")
                         tvLevel.text         = "LV ${json.optInt("level", 1)}"

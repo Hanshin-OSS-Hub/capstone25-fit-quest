@@ -5,7 +5,45 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <!-- 목록 컨테이너 (동적으로 카드 추가) -->
+    <!-- 운동 부위 선택 카드 -->
+    <com.google.android.material.card.MaterialCardView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_muscle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="#CCffffff">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="운동 부위 선택"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:paddingBottom="12dp" />
+
+            <!-- 부위 버튼은 코드에서 동적으로 추가 -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_muscle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:chipSpacingHorizontal="6dp"
+                app:chipSpacingVertical="4dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 스트레칭 목록 컨테이너 -->
     <LinearLayout
         android:id="@+id/stretching_list_container"
         android:layout_width="match_parent"
