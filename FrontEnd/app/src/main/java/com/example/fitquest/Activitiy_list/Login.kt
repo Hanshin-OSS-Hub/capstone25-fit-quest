@@ -32,6 +32,7 @@ import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.net.URLEncoder
+import android.content.Context
 
 class Login : AppCompatActivity() {
 
@@ -191,7 +192,16 @@ class Login : AppCompatActivity() {
                 val accessToken = response.optString("access", "")
                 val refreshToken = response.optString("refresh", "")
                 if (accessToken.isNotEmpty()) {
-                    saveTokens(accessToken, refreshToken)
+                    val shared_Pref = getSharedPreferences("FitQuestPrefs", Context.MODE_PRIVATE)
+                    shared_Pref.edit()
+                        .remove("running_stats_data")   // 이전 유저 기록 삭제
+                        .remove("user_info")            // 이전 유저 정보 삭제
+                        .remove("today_sessions")
+                        // .remove("sent_sessions")
+                        .remove("last_loaded_token") // (Main onResume 재실행 보장)
+                        .putString("access_token", accessToken)
+                        .putString("refresh_token", refreshToken)
+                        .apply()
                 }
                 Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
                 goToMainActivity()

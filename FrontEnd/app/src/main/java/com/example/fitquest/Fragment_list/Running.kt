@@ -16,13 +16,14 @@ import androidx.core.content.res.ResourcesCompat
 import com.example.fitquest.R
 import com.google.android.material.button.MaterialButton
 import org.json.JSONArray
+import org.w3c.dom.Text
 import java.text.SimpleDateFormat
 import java.util.*
 
 class RunningFragment : Fragment() {
 
     private lateinit var sessionContainer: LinearLayout
-    private lateinit var btnRefresh: Button
+    private lateinit var btnRefresh: TextView
     private val handler = Handler(Looper.getMainLooper())
 
     private val sessionTimeFormat = SimpleDateFormat("HH:mm", Locale.getDefault()).apply {
@@ -81,14 +82,14 @@ class RunningFragment : Fragment() {
 
         btnRefresh.setOnClickListener {
             btnRefresh.isEnabled = false
-            btnRefresh.text = "로딩중..."
+            btnRefresh.text = "⏳"
             (activity as? HomeFragment.RefreshListener)?.onRefreshRequested()
             handler.postDelayed({
                 if (isAdded && context != null) {
                     val sharedPref = requireActivity().getSharedPreferences("FitQuestPrefs", android.content.Context.MODE_PRIVATE)
                     loadTodaySessions(sharedPref)
                     btnRefresh.isEnabled = true
-                    btnRefresh.text = "새로고침"
+                    btnRefresh.text = "🔄"
                 }
             }, 3000)
         }

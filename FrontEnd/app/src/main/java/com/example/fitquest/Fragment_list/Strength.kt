@@ -4,20 +4,19 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.example.fitquest.R
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
 
-class StretchingFragment : Fragment(R.layout.fragment_stretching) {
+class StrengthFragment : Fragment(R.layout.fragment_strength) {
 
     private var allItems = listOf<Map<String, String>>()
     private var interRegular: Typeface? = null
@@ -26,9 +25,23 @@ class StretchingFragment : Fragment(R.layout.fragment_stretching) {
         super.onViewCreated(view, savedInstanceState)
 
         interRegular = ResourcesCompat.getFont(requireContext(), R.font.inter_regular)
-        val container = view.findViewById<LinearLayout>(R.id.stretching_list_container)
-        val chipGroup = view.findViewById<ChipGroup>(R.id.chip_group_muscle)
+        val container = view.findViewById<LinearLayout>(R.id.strength_list_container)
 
+        val levelButtons = listOf(
+            view.findViewById<Button>(R.id.btn_lv1),
+            view.findViewById<Button>(R.id.btn_lv2),
+            view.findViewById<Button>(R.id.btn_lv3),
+            view.findViewById<Button>(R.id.btn_lv4),
+            view.findViewById<Button>(R.id.btn_lv5)
+        )
+
+        levelButtons.forEachIndexed { index, btn ->
+            btn.setOnClickListener {
+                showLevel(container, index + 1)
+            }
+        }
+
+        // API 로드
         thread {
             try {
                 val url = URL("https://fitquest25.xyz/api/workout/workouts/")
@@ -40,50 +53,21 @@ class StretchingFragment : Fragment(R.layout.fragment_stretching) {
                 val items = mutableListOf<Map<String, String>>()
                 for (i in 0 until jsonArray.length()) {
                     val obj = jsonArray.getJSONObject(i)
-                    if (obj.getString("category") == "stretching") {
+                    if (obj.getString("category") == "strength") {
                         items.add(mapOf(
-                            "name"             to obj.getString("name"),
-                            "target_muscle"    to obj.getString("target_muscle"),
-                            "equipment"        to obj.getString("equipment"),
-                            "duration_or_reps" to obj.getString("duration_or_reps")
+                            "name" to obj.getString("name"),
+                            "target_muscle" to obj.getString("target_muscle"),
+                            "equipment" to obj.getString("equipment"),
+                            "duration_or_reps" to obj.getString("duration_or_reps"),
+                            "level" to obj.getInt("level").toString()
                         ))
                     }
                 }
 
                 requireActivity().runOnUiThread {
                     allItems = items
-
-                    // 중복 없는 부위 목록 (등장 순서 유지)
-                    val muscles = items.map { it["target_muscle"] ?: "" }
-                        .distinct()
-                        .filter { it.isNotBlank() }
-
-                    // Chip 생성
-                    muscles.forEach { muscle ->
-                        val chip = Chip(requireContext()).apply {
-                            text = muscle
-                            isCheckable = true
-                            typeface = interRegular
-                            setTextColor(resources.getColorStateList(
-                                com.google.android.material.R.color.mtrl_choice_chip_text_color,
-                                requireContext().theme
-                            ))
-                        }
-                        chipGroup.addView(chip)
-                    }
-
-                    // 첫 번째 부위 자동 선택
-                    if (chipGroup.childCount > 0) {
-                        (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
-                        showMuscle(container, muscles.firstOrNull() ?: "")
-                    }
-
-                    // Chip 선택 리스너
-                    chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-                        val selectedChip = checkedIds.firstOrNull()
-                            ?.let { group.findViewById<Chip>(it) }
-                        showMuscle(container, selectedChip?.text?.toString() ?: "")
-                    }
+                    // 기본으로 Lv1 표시
+                    showLevel(container, 1)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -91,9 +75,9 @@ class StretchingFragment : Fragment(R.layout.fragment_stretching) {
         }
     }
 
-    private fun showMuscle(container: LinearLayout, muscle: String) {
+    private fun showLevel(container: LinearLayout, level: Int) {
         container.removeAllViews()
-        val filtered = allItems.filter { it["target_muscle"] == muscle }
+        val filtered = allItems.filter { it["level"] == level.toString() }
 
         for (item in filtered) {
             val card = MaterialCardView(requireContext()).apply {
@@ -146,8 +130,9 @@ class StretchingFragment : Fragment(R.layout.fragment_stretching) {
                 inner.addView(row)
             }
 
+            addRow("운동 부위", item["target_muscle"] ?: "")
             addRow("기구", item["equipment"] ?: "")
-            addRow("횟수/시간", item["duration_or_reps"] ?: "")
+            addRow("횟수/세트", item["duration_or_reps"] ?: "")
 
             card.addView(inner)
             container.addView(card)
