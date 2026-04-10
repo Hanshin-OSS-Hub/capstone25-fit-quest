@@ -34,8 +34,9 @@ class UserQuestProgress(models.Model):
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
     progress_value = models.FloatField(default=0.0)
     is_completed = models.BooleanField(default=False)
-    cycle_key = models.CharField(max_length=20) 
-    completed_at = models.DateTimeField(null=True, blank=True) # 팀원의 완료 일시 추가
+    is_reward_claimed = models.BooleanField(default=False)  # 보상 버튼 눌러서 받았는지
+    cycle_key = models.CharField(max_length=20)
+    completed_at = models.DateTimeField(null=True, blank=True)  # 달성 시간
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

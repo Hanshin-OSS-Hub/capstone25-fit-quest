@@ -95,13 +95,12 @@ class UserQuestProgressSerializer(serializers.ModelSerializer):
     quest_desc = serializers.CharField(source="quest.description", read_only=True)
     target_value = serializers.FloatField(source="quest.target_value", read_only=True)
     reward_xp = serializers.IntegerField(source="quest.reward_xp", read_only=True)
-    reward_points = serializers.IntegerField(source="quest.reward_points", read_only=True)
 
     class Meta:
         model = UserQuestProgress
         fields = [
             "id", "quest", "quest_name", "quest_desc", "target_value", 
-            "progress_value", "is_completed", "reward_xp", "reward_points", 
+            "progress_value", "is_completed", "reward_xp", "is_reward_claimed",
             "cycle_key", "completed_at"
         ]
         read_only_fields = ["is_completed", "completed_at"]

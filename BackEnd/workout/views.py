@@ -1,25 +1,135 @@
+from requests import session
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+import random
 from django.utils import timezone
-from datetime import timedelta
+from datetime import date, timedelta
 import logging
 
-# 로거 설정 
+from urllib3 import request
+
+
+# 로거 설정
 logger = logging.getLogger(__name__)
 
 from .models import (
-    Exercise, ExerciseLog, RunningSession, Quest, 
+    Exercise, ExerciseLog, RunningSession, Quest,
     UserQuestProgress, Workout, Achievement, UserAchievement
 )
 from .serializers import (
-    ExerciseSerializer, ExerciseLogSerializer, RunningSessionSerializer, 
+    ExerciseSerializer, ExerciseLogSerializer, RunningSessionSerializer,
     QuestSerializer, UserQuestProgressSerializer, WorkoutSerializer, AchievementSerializer
 )
 
+
 # ==========================================
-# 1. 일반 운동 및 스트레칭 
+# 0. 업적 자동 달성 처리 유틸
+# ==========================================
+def calculate_user_achievement_metrics(user):
+    running_sessions = RunningSession.objects.filter(user=user)
+
+    total_distance = sum(float(s.distance_km or 0) for s in running_sessions)
+    total_duration = sum(int(s.duration_sec or 0) for s in running_sessions)
+    total_calories = sum(float(s.calories_burned or 0) for s in running_sessions)
+
+    running_dates = set(
+        RunningSession.objects.filter(user=user)
+        .values_list("start_time__date", flat=True)
+    )
+    exercise_dates = set(
+        ExerciseLog.objects.filter(user=user)
+        .values_list("created_at__date", flat=True)
+    )
+    total_days = len(running_dates | exercise_dates)
+
+    return {
+        "total_distance": total_distance,
+        "total_duration": total_duration,
+        "total_calories": total_calories,
+        "total_days": total_days,
+    }
+
+def check_and_grant_achievements(user):
+    metrics = calculate_user_achievement_metrics(user)
+    achievements = Achievement.objects.all()
+    newly_achieved = []
+    gained_exp = 0
+
+    for achievement in achievements:
+        current_value = metrics.get(achievement.metric)
+
+        if current_value is None:
+            continue
+
+        if float(current_value) >= float(achievement.target_value):
+            _, created = UserAchievement.objects.get_or_create(
+                user=user,
+                achievement=achievement
+            )
+
+            if created:
+                newly_achieved.append({
+                    "id": achievement.id,
+                    "name": achievement.name,
+                    "reward_title": achievement.reward_title,
+                    "reward_exp": getattr(achievement, "reward_exp", 0),
+                })
+
+                gained_exp += int(getattr(achievement, "reward_exp", 0) or 0)
+
+    if gained_exp > 0:
+        user.exp += gained_exp
+        user.save(update_fields=["exp"])
+
+    return newly_achieved
+
+def get_cycle_key(quest_type):
+    today = date.today()
+
+    if quest_type == "daily":
+        return today.strftime("%Y-%m-%d")
+    elif quest_type == "weekly":
+        return today.strftime("%Y-W%U")
+    elif quest_type == "monthly":
+        return today.strftime("%Y-%m")
+    return today.strftime("%Y-%m-%d")
+
+
+def update_user_quest_progress(user, distance_km=0, duration_sec=0, calories_burned=0):
+    cycle_keys = [
+        get_cycle_key("daily"),
+        get_cycle_key("weekly"),
+        get_cycle_key("monthly"),
+    ]
+
+    progresses = UserQuestProgress.objects.filter(
+        user=user,
+        cycle_key__in=cycle_keys
+    ).select_related("quest")
+
+    for progress in progresses:
+        if progress.is_completed:
+            continue
+
+        quest = progress.quest
+
+        if quest.metric == "distance":
+            progress.progress_value += float(distance_km or 0)
+        elif quest.metric == "duration":
+            progress.progress_value += float(duration_sec or 0)
+        elif quest.metric == "calories":
+            progress.progress_value += float(calories_burned or 0)
+
+        if float(progress.progress_value) >= float(quest.target_value):
+            progress.is_completed = True
+            if progress.completed_at is None:
+                progress.completed_at = timezone.now()
+
+        progress.save()
+
+# ==========================================
+# 1. 일반 운동 및 스트레칭
 # ==========================================
 class ExerciseListAPIView(generics.ListAPIView):
     """제공되는 모든 운동/스트레칭 목록 조회"""
@@ -28,7 +138,6 @@ class ExerciseListAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, *args, **kwargs):
-        # 성공 로그 (터미널 확인용)
         print("🚀 [SUCCESS] 누군가 운동 목록을 요청했습니다!")
         return super().get(request, *args, **kwargs)
 
@@ -46,21 +155,43 @@ class ExerciseLogListCreateView(generics.ListCreateAPIView):
 
 
 # ==========================================
-# 2. 러닝 기록 및 통계 
+# 2. 러닝 기록 및 통계
 # ==========================================
 class RunningSessionListCreateView(generics.ListCreateAPIView):
     """러닝 기록 목록 조회 및 생성"""
     serializer_class = RunningSessionSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return RunningSession.objects.filter(user=self.request.user).order_by("-created_at")
 
-    def perform_create(self, serializer):
-        #  데이터 확인 로그
-        logger.debug(f"✅ [RunningSession] 프론트가 보낸 데이터: {self.request.data}")
-        serializer.save(user=self.request.user)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
+        logger.debug(f"✅ [RunningSession] 프론트가 보낸 데이터: {self.request.data}")
+        session = serializer.save(user=request.user)
+
+        new_distance = float(session.distance_km or 0)
+        new_duration = int(session.duration_sec or 0)
+        new_calories = int(session.calories_burned or 0)
+
+        update_user_quest_progress(
+            request.user,
+            distance_km=new_distance,
+            duration_sec=new_duration,
+            calories_burned=new_calories,
+        )
+
+        newly_achieved = check_and_grant_achievements(request.user)
+
+        response_data = serializer.data
+        response_data["new_achievements"] = newly_achieved
+        response_data["current_exp"] = request.user.exp
+        response_data["current_level"] = request.user.level
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
 class RunningSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
     """러닝 기록 상세 조회, 수정, 삭제"""
@@ -140,7 +271,7 @@ class RunningStatsView(APIView):
 # ==========================================
 class HealthConnectRunningUploadView(APIView):
     """안드로이드 헬스커넥트 데이터 업로드"""
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         logger.debug(f"📡 [HealthConnect] 프론트가 보낸 데이터: {request.data}")
@@ -167,7 +298,23 @@ class HealthConnectRunningUploadView(APIView):
             start_time=start_time,
             end_time=end_time
         )
-        return Response({"detail": "Health Connect data uploaded successfully", "id": session.id}, status=201)
+
+        update_user_quest_progress(
+            user,
+            distance_km=float(distance_km or 0),
+            duration_sec=int(duration_sec or 0),
+            calories_burned=float(calories or 0),
+        )
+
+        newly_achieved = check_and_grant_achievements(user)
+
+        return Response({
+            "detail": "Health Connect data uploaded successfully",
+            "id": session.id,
+            "new_achievements": newly_achieved,
+            "current_exp": user.exp,
+            "current_level": user.level,
+        }, status=201)
 
 
 # ==========================================
@@ -179,77 +326,142 @@ class AvailableQuestListAPIView(generics.ListAPIView):
     serializer_class = QuestSerializer
     permission_classes = [permissions.AllowAny]
 
-
 class UserQuestProgressListAPIView(generics.ListAPIView):
-    """내 퀘스트 진행도 확인"""
+    """내 퀘스트 진행도 확인 (없으면 자동 생성, 많으면 정리)"""
     serializer_class = UserQuestProgressSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return UserQuestProgress.objects.filter(user=self.request.user).order_by("-updated_at")
+        user = self.request.user
+        all_progress = []
 
+        for quest_type in ["daily", "weekly", "monthly"]:
+            cycle_key = get_cycle_key(quest_type)
+
+            existing = list(
+                UserQuestProgress.objects.filter(
+                    user=user,
+                    cycle_key=cycle_key,
+                    quest__quest_type=quest_type
+                ).select_related("quest").order_by("-id")
+            )
+
+            # 잘못 많이 들어간 데이터가 있으면 3개만 남기고 정리
+            if len(existing) > 3:
+                extra_ids = [p.id for p in existing[3:]]
+                UserQuestProgress.objects.filter(id__in=extra_ids).delete()
+                existing = existing[:3]
+
+            # 이미 3개가 있으면 그대로 사용
+            if len(existing) == 3:
+                all_progress.extend(existing)
+                continue
+
+            # 1개나 2개만 있는 애매한 상태면 다 지우고 새로 3개 생성
+            if 0 < len(existing) < 3:
+                UserQuestProgress.objects.filter(
+                    user=user,
+                    cycle_key=cycle_key,
+                    quest__quest_type=quest_type
+                ).delete()
+                existing = []
+
+            candidates = list(
+                Quest.objects.filter(
+                    quest_type=quest_type,
+                    is_active=True
+                )
+            )
+
+            if not candidates:
+                continue
+
+            selected = random.sample(candidates, min(3, len(candidates)))
+
+            for quest in selected:
+                progress = UserQuestProgress.objects.create(
+                    user=user,
+                    quest=quest,
+                    progress_value=0,
+                    is_completed=False,
+                    is_reward_claimed=False,
+                    cycle_key=cycle_key
+                )
+                all_progress.append(progress)
+
+        return sorted(all_progress, key=lambda x: x.id, reverse=True)
 
 class ClaimQuestRewardAPIView(APIView):
     """퀘스트 달성 보상 수령"""
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         try:
             progress = UserQuestProgress.objects.get(id=pk, user=request.user)
         except UserQuestProgress.DoesNotExist:
-            return Response({"detail": "존재하지 않거나 권한이 없는 퀘스트입니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "존재하지 않거나 권한이 없는 퀘스트입니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         if not progress.is_completed:
-            return Response({"detail": "아직 완료되지 않은 퀘스트입니다."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if progress.completed_at is not None:
-            return Response({"detail": "이미 보상을 수령했습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "아직 완료되지 않은 퀘스트입니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if progress.is_reward_claimed:
+            return Response(
+                {"detail": "이미 보상을 수령했습니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         user = request.user
         quest = progress.quest
-        
+
         user.exp += quest.reward_xp
         user.point += quest.reward_points
         user.save()
 
-        progress.completed_at = timezone.now()
-        progress.save()
+        progress.is_reward_claimed = True
+        progress.save(update_fields=["is_reward_claimed"])
 
         return Response({
             "detail": "보상 수령 완료!",
             "reward_xp": quest.reward_xp,
             "reward_points": quest.reward_points,
             "total_exp": user.exp,
-            "total_point": user.point
+            "total_point": user.point,
+            "completed_at": progress.completed_at,
         }, status=status.HTTP_200_OK)
 
 
 # ==========================================
-# 5. 홈 트레이닝 도감 
+# 5. 홈 트레이닝 도감
 # ==========================================
 class WorkoutListView(APIView):
     """운동 도감 목록 조회 (필터 포함)"""
     permission_classes = [permissions.AllowAny]
-    
+
     def get(self, request):
         workouts = Workout.objects.all()
         level = request.query_params.get('level')
         category = request.query_params.get('category')
-        
+
         if level:
             workouts = workouts.filter(level=level)
         if category:
             workouts = workouts.filter(category=category)
-            
+
         serializer = WorkoutSerializer(workouts, many=True)
         return Response(serializer.data)
 
 
 # ==========================================
-# 6. 업적 및 칭호 
+# 6. 업적 및 칭호
 # ==========================================
 class AchievementListAPIView(generics.ListAPIView):
     """업적 목록 조회"""
-    queryset = Achievement.objects.all().order_by('id')
+    queryset = Achievement.objects.all().order_by("id")
     serializer_class = AchievementSerializer
     permission_classes = [permissions.IsAuthenticated]
