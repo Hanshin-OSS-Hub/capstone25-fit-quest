@@ -39,6 +39,8 @@ services:
     environment:
       - TZ=Asia/Seoul
       - PYTHONUNBUFFERED=1
+    volumes:
+      - media_data:/app/media
     networks:
       - fitquest-net
 
@@ -55,6 +57,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - /home/ubuntu/certbot/www:/var/www/certbot:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - media_data:/app/media:ro
     networks:
       - fitquest-net
 
@@ -62,5 +65,6 @@ networks:
   fitquest-net:
     driver: bridge
 
-volumes: 
+volumes:
   mysql_data:
+  media_data:
