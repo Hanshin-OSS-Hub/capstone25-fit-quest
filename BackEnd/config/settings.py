@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     'drf_yasg',
-    "storages",
 
     # 우리 앱
     "fitquest.apps.FitquestConfig",
