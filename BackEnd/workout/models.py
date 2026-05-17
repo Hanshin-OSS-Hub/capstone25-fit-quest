@@ -72,7 +72,12 @@ class ExerciseLog(models.Model):
 
 # 6. 홈 트레이닝 도감 및 기록 
 class Workout(models.Model):
-    CATEGORY_CHOICES = (('stretching', '스트레칭'), ('cardio', '유산소'), ('strength', '근력'))
+    CATEGORY_CHOICES = (
+        ('stretching', '스트레칭'),
+        ('cardio', '유산소'),
+        ('strength', '근력')
+    )
+
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     target_muscle = models.CharField(max_length=50)
@@ -80,7 +85,8 @@ class Workout(models.Model):
     equipment = models.CharField(max_length=50, default='맨몸')
     duration_or_reps = models.CharField(max_length=50)
     calories_per_minute = models.IntegerField(default=0, help_text="분당 소모 칼로리")
-    
+
+    image_name = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -115,3 +121,5 @@ class UserAchievement(models.Model):
 
     def __str__(self):
         return f"{self.user.nickname} - {self.achievement.name}"
+
+

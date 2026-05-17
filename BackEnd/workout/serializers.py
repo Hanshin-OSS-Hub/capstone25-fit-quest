@@ -1,8 +1,10 @@
+from django.conf import settings
 from rest_framework import serializers
 from datetime import date
 from .models import (
-    Workout, Quest, Achievement, UserAchievement, WorkoutLog, RunningSession, UserQuestProgress
+    Workout, Quest, Achievement, UserAchievement, WorkoutLog, RunningSession, UserQuestProgress,Workout
 )
+
 
 # 러닝 기록 시 퀘스트 진행도 업데이트 함수
 def process_running_log(running_session):
@@ -109,15 +111,39 @@ class UserQuestProgressSerializer(serializers.ModelSerializer):
 # ==========================================
 # 4. 홈 트레이닝 도감 
 # ==========================================
+
 class WorkoutSerializer(serializers.ModelSerializer):
-    # '스트레칭'처럼 한글로 이름을 보여주는 기능
     category_display = serializers.CharField(source='get_category_display', read_only=True)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Workout
-        fields = ['id', 'name', 'category', 'category_display', 'target_muscle', 'level', 'equipment', 'duration_or_reps']
+        fields = [
+            'id',
+            'name',
+            'category',
+            'category_display',
+            'target_muscle',
+            'level',
+            'equipment',
+            'duration_or_reps',
+            'calories_per_minute',
+            'image_name',
+            'image_url',
+        ]
 
+    def get_image_url(self, obj):
+        if not obj.image_name:
+            return None
 
+        request = self.context.get("request")
+        path = f"/media/Workout_img/{obj.image_name}"
+
+        if request:
+            return request.build_absolute_uri(path)
+
+        return path
+    
 # ==========================================
 # 5. 업적 및 칭호 
 # ==========================================
@@ -141,3 +167,6 @@ class AchievementSerializer(serializers.ModelSerializer):
                 achievement=obj
             ).exists()
         return False
+    
+
+

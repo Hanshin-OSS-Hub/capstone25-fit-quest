@@ -327,7 +327,7 @@ class AvailableQuestListAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
 class UserQuestProgressListAPIView(generics.ListAPIView):
-    """내 퀘스트 진행도 확인 (없으면 자동 생성, 많으면 정리)"""
+    """내 퀘스트 진행도 확인 (없으면 자동 생성, 기존 퀘스트는 유지)"""
     serializer_class = UserQuestProgressSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -343,53 +343,45 @@ class UserQuestProgressListAPIView(generics.ListAPIView):
                     user=user,
                     cycle_key=cycle_key,
                     quest__quest_type=quest_type
-                ).select_related("quest").order_by("-id")
+                ).select_related("quest").order_by("id")
             )
 
-            # 잘못 많이 들어간 데이터가 있으면 3개만 남기고 정리
-            if len(existing) > 3:
-                extra_ids = [p.id for p in existing[3:]]
-                UserQuestProgress.objects.filter(id__in=extra_ids).delete()
-                existing = existing[:3]
-
-            # 이미 3개가 있으면 그대로 사용
-            if len(existing) == 3:
-                all_progress.extend(existing)
+            # 이미 3개 이상 있으면 기존 것 중 앞의 3개만 반환
+            # 조회 API에서는 delete 하지 않음
+            if len(existing) >= 3:
+                all_progress.extend(existing[:3])
                 continue
 
-            # 1개나 2개만 있는 애매한 상태면 다 지우고 새로 3개 생성
-            if 0 < len(existing) < 3:
-                UserQuestProgress.objects.filter(
-                    user=user,
-                    cycle_key=cycle_key,
-                    quest__quest_type=quest_type
-                ).delete()
-                existing = []
+            # 기존 퀘스트는 유지하고, 부족한 개수만 새로 생성
+            needed_count = 3 - len(existing)
+
+            existing_quest_ids = [p.quest_id for p in existing]
 
             candidates = list(
                 Quest.objects.filter(
                     quest_type=quest_type,
                     is_active=True
-                )
+                ).exclude(id__in=existing_quest_ids)
             )
 
-            if not candidates:
-                continue
+            if candidates:
+                selected = random.sample(candidates, min(needed_count, len(candidates)))
 
-            selected = random.sample(candidates, min(3, len(candidates)))
+                for quest in selected:
+                    progress = UserQuestProgress.objects.create(
+                        user=user,
+                        quest=quest,
+                        progress_value=0,
+                        is_completed=False,
+                        is_reward_claimed=False,
+                        cycle_key=cycle_key
+                    )
+                    existing.append(progress)
 
-            for quest in selected:
-                progress = UserQuestProgress.objects.create(
-                    user=user,
-                    quest=quest,
-                    progress_value=0,
-                    is_completed=False,
-                    is_reward_claimed=False,
-                    cycle_key=cycle_key
-                )
-                all_progress.append(progress)
+            all_progress.extend(existing)
 
         return sorted(all_progress, key=lambda x: x.id, reverse=True)
+
 
 class ClaimQuestRewardAPIView(APIView):
     """퀘스트 달성 보상 수령"""
@@ -453,9 +445,12 @@ class WorkoutListView(APIView):
         if category:
             workouts = workouts.filter(category=category)
 
-        serializer = WorkoutSerializer(workouts, many=True)
+        serializer = WorkoutSerializer(
+            workouts,
+            many=True,
+            context={"request": request}
+        )
         return Response(serializer.data)
-
 
 # ==========================================
 # 6. 업적 및 칭호
