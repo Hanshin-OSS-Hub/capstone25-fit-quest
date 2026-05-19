@@ -4,7 +4,7 @@ from rest_framework import serializers
 from workout.models import Workout, Quest, Achievement, UserAchievement 
 from workout.models import RunningSession, ExerciseLog
 from datetime import date, timedelta
-
+from workout.level_utils import calculate_level_info
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -31,11 +31,13 @@ class UserSerializer(serializers.ModelSerializer):
     monster_tier = serializers.ReadOnlyField()
     attendance_days = serializers.SerializerMethodField()
     streak_days = serializers.SerializerMethodField()
-
+    level_exp = serializers.SerializerMethodField()
+    exp_required = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ['id', 'email', 'nickname', 'level', 'exp', 'monster_tier', 'current_title','attendance_days', 'streak_days']
-        read_only_fields = ['level', 'monster_tier','attendance_days', 'streak_days']
+        fields = ['id', 'email', 'nickname', 'level', 'exp', 'monster_tier', 'current_title','attendance_days', 'streak_days', 'level_exp', 'exp_required']
+        read_only_fields = ['level', 'monster_tier','attendance_days', 'streak_days', 'level_exp', 'exp_required']
     
     
     def _get_activity_dates(self, obj):
@@ -82,6 +84,13 @@ class UserSerializer(serializers.ModelSerializer):
 
         return streak
     
+    def get_level_exp(self, obj):
+        return calculate_level_info(obj.exp)["level_exp"]
+
+    def get_exp_required(self, obj):
+        return calculate_level_info(obj.exp)["exp_required"]
+
+
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = "email"
 

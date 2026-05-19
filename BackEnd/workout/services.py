@@ -1,7 +1,8 @@
-
+from .level_utils import add_exp_and_level_up
 from django.utils import timezone
 from django.db import transaction
 from .models import Quest, UserQuestProgress
+from .level_utils import add_exp_and_level_up
 
 def get_cycle_key(quest_type):
     """퀘스트 타입에 따라 현재 주기의 키(ID)를 생성"""
@@ -87,10 +88,11 @@ def claim_reward_service(user, progress_id):
     # 퀘스트 정보를 가져오기 위해 select_related 사용 권장 (성능 최적화)
     quest = progress.quest
     
-    user.exp += quest.reward_xp
     user.point += quest.reward_points
-    user.save()
+    user.save(update_fields=["point"])
 
+    add_exp_and_level_up(user, quest.reward_xp)
+    
     # 3. 수령 상태 업데이트
     progress.completed_at = timezone.now()
     progress.save()

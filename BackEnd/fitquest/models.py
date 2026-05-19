@@ -11,6 +11,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from workout.level_utils import calculate_level_info
+
 class SocialAccount(models.Model):
     PROVIDER_KAKAO = "kakao"
 
@@ -71,7 +73,8 @@ class CustomUser(AbstractUser):
 
     @property
     def level(self):
-        return 1 + (self.exp // 100)
+        from workout.level_utils import calculate_level_info
+        return calculate_level_info(self.exp)["level"]
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["nickname"]

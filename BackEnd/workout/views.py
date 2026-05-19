@@ -1,4 +1,4 @@
-from requests import session
+from .level_utils import add_exp_and_level_up
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,7 +7,7 @@ from django.utils import timezone
 from datetime import date, timedelta
 import logging
 
-from urllib3 import request
+
 
 
 # 로거 설정
@@ -79,8 +79,7 @@ def check_and_grant_achievements(user):
                 gained_exp += int(getattr(achievement, "reward_exp", 0) or 0)
 
     if gained_exp > 0:
-        user.exp += gained_exp
-        user.save(update_fields=["exp"])
+        add_exp_and_level_up(user, gained_exp)
 
     return newly_achieved
 
@@ -411,9 +410,10 @@ class ClaimQuestRewardAPIView(APIView):
         user = request.user
         quest = progress.quest
 
-        user.exp += quest.reward_xp
         user.point += quest.reward_points
-        user.save()
+        user.save(update_fields=["point"])
+
+        add_exp_and_level_up(user, quest.reward_xp)
 
         progress.is_reward_claimed = True
         progress.save(update_fields=["is_reward_claimed"])
@@ -423,6 +423,7 @@ class ClaimQuestRewardAPIView(APIView):
             "reward_xp": quest.reward_xp,
             "reward_points": quest.reward_points,
             "total_exp": user.exp,
+            "total_level": user.level,
             "total_point": user.point,
             "completed_at": progress.completed_at,
         }, status=status.HTTP_200_OK)
