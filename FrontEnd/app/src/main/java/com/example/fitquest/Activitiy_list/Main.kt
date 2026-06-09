@@ -31,6 +31,9 @@ import retrofit2.http.POST
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
 
 class Main : AppCompatActivity(), HomeFragment.RefreshListener {
 
@@ -75,7 +78,6 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
         }
     }
 
-    // ★ 현재 표시 중인 HomeFragment에 갱신 요청
     private fun notifyHomeFragment() {
         supportFragmentManager.fragments.forEach { fragment ->
             if (fragment is HomeFragment && fragment.isAdded && !fragment.isDetached) {
@@ -124,7 +126,6 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
             return
         }
 
-        // 유저 ID 추출
         val userInfo = sharedPref.getString("user_info", null)
         val userId = if (userInfo != null) {
             try { JSONObject(userInfo).optInt("id", -1) } catch (e: Exception) { -1 }
@@ -136,13 +137,27 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
             return
         }
 
-        val sentSessionsKey = "sent_sessions_$userId"  // ★ 계정별 키
+        //sentSessionsKey 선언을 여기 한 곳에만 유지 (중복 선언 제거)
+        val sentSessionsKey = "sent_sessions_$userId"
         Log.i(TAG, "토큰: $accessToken / 유저ID: $userId")
-
 
         val sdkStatus = HealthConnectClient.getSdkStatus(this)
         if (sdkStatus != HealthConnectClient.SDK_AVAILABLE) {
             Log.e(TAG, "❌ Health Connect 사용 불가")
+            runOnUiThread {
+                AlertDialog.Builder(this)
+                    .setTitle("Health Connect 필요")
+                    .setMessage("운동 데이터 연동을 위해 Health Connect 앱 설치가 필요합니다.\n설치 후 앱을 재시작해주세요.")
+                    .setPositiveButton("설치하기") { _, _ ->
+                        startActivity(
+                            Intent(Intent.ACTION_VIEW).apply {
+                                data = Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")
+                            }
+                        )
+                    }
+                    .setNegativeButton("취소", null)
+                    .show()
+            }
             return
         }
 
@@ -160,12 +175,11 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
 
             if (exerciseResponse.records.isEmpty()) {
                 Log.e(TAG, "❌ 오늘 운동 기록 없음")
-                getRunningStats()   // 운동 없어도 최신 통계는 가져옴
+                getRunningStats()
                 return
             }
 
             val formatter    = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
-            val sentSessionsKey = "sent_sessions_$userId"
             val sentSessions = sharedPref.getStringSet(sentSessionsKey, mutableSetOf()) ?: mutableSetOf()
 
             for ((index, session) in exerciseResponse.records.withIndex()) {
@@ -186,7 +200,8 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
 
                 val startTimeStr = formatter.format(sessionStart)
                 val endTimeStr   = formatter.format(sessionEnd)
-                val sessionKey = "${startTimeStr}_${distanceKm}_${durationSec}"
+
+                val sessionKey = startTimeStr
 
                 Log.i(TAG_DATA, "===== 세션 ${index + 1} 데이터 =====")
                 Log.i(TAG_DATA, "distance_km: $distanceKm / duration_sec: $durationSec / calories: $calories")
@@ -196,7 +211,6 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
                     continue
                 }
 
-                // 오늘 세션 저장
                 val sessionJson = JSONObject().apply {
                     put("distance_km", distanceKm)
                     put("duration_sec", durationSec)
@@ -219,7 +233,6 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
                     Log.i(TAG, "✅ 세션 저장 완료: $startTimeStr / 세션 수: ${existingArray.length()}")
                 }
 
-                // 중복 전송 방지
                 if (sentSessions.contains(sessionKey)) {
                     Log.i(TAG_DUP, "세션 ${index + 1} 이미 전송됨 - 스킵: $sessionKey")
                     continue
@@ -243,7 +256,8 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
                         Log.i(TAG, "✅ 전송 성공!")
                         val updated = sentSessions.toMutableSet()
                         updated.add(sessionKey)
-                        sharedPref.edit().putStringSet(sentSessionsKey, updated).apply()
+                        // (비동기 저장 타이밍 이슈 방지)
+                        sharedPref.edit().putStringSet(sentSessionsKey, updated).commit()
                         Log.i(TAG_DUP, "전송 완료 저장: $sessionKey")
                     } else {
                         Log.e(TAG, "❌ 전송 실패 ${response.code()}: ${response.errorBody()?.string()}")
@@ -260,7 +274,6 @@ class Main : AppCompatActivity(), HomeFragment.RefreshListener {
             Log.e(TAG, "❌ 오류: ${e.message}")
         }
 
-        // ★ 모든 전송 완료 후 통계 갱신 (순서 보장)
         getRunningStats()
     }
 

@@ -44,24 +44,24 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/logo" />
 
-        <Button
-            android:id="@+id/gologin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="로그인"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+<!--        <Button-->
+<!--            android:id="@+id/gologin"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="로그인"-->
+<!--            android:textSize="12sp"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
 
-        <Button
-            android:id="@+id/goHealth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="헬스"
-            android:textSize="12sp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@id/gologin"
-            app:layout_constraintTop_toTopOf="parent" />
+<!--        <Button-->
+<!--            android:id="@+id/goHealth"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="헬스"-->
+<!--            android:textSize="12sp"-->
+<!--            android:layout_marginEnd="8dp"-->
+<!--            app:layout_constraintEnd_toStartOf="@id/gologin"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
 
         <LinearLayout
             android:id="@+id/fighting_box"
@@ -317,47 +317,47 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ===== 테스트 버튼 (나중에 삭제) ===== -->
-        <LinearLayout
-            android:id="@+id/test_buttons"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/card_stats">
+        <!-- 테스트 버튼 (나중에 삭제) -->
+<!--        <LinearLayout-->
+<!--            android:id="@+id/test_buttons"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/card_stats">-->
 
-            <Button
-                android:id="@+id/btn_test_achievements"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="업적"
-                android:textSize="11sp"
-                android:layout_marginEnd="4dp" />
+<!--            <Button-->
+<!--                android:id="@+id/btn_test_achievements"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="업적"-->
+<!--                android:textSize="11sp"-->
+<!--                android:layout_marginEnd="4dp" />-->
 
-            <Button
-                android:id="@+id/btn_test_titles"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="칭호"
-                android:textSize="11sp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp" />
+<!--            <Button-->
+<!--                android:id="@+id/btn_test_titles"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="칭호"-->
+<!--                android:textSize="11sp"-->
+<!--                android:layout_marginStart="4dp"-->
+<!--                android:layout_marginEnd="4dp" />-->
 
-            <Button
-                android:id="@+id/btn_test_me"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="내정보"
-                android:textSize="11sp"
-                android:layout_marginStart="4dp" />
+<!--            <Button-->
+<!--                android:id="@+id/btn_test_me"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="내정보"-->
+<!--                android:textSize="11sp"-->
+<!--                android:layout_marginStart="4dp" />-->
 
-        </LinearLayout>
-        <!-- ===== 테스트 버튼 끝 ===== -->
+<!--        </LinearLayout>-->
+        <!-- 테스트 버튼 끝 -->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

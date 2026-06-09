@@ -220,7 +220,7 @@ class RunningFragment : Fragment() {
         headerLayout.addView(sessionTitle)
         headerLayout.addView(sessionTime)
 
-        // 1행: 거리 / 시간 / 평균페이스
+        // 거리 / 시간 / 평균페이스
         val statsRow1 = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
@@ -235,7 +235,7 @@ class RunningFragment : Fragment() {
         statsRow1.addView(makeStatItem("⏱️", "${min}분 ${sec}초", "시간"))
         statsRow1.addView(makeStatItem("📈", "${formatPace(avgPace)} /km", "평균 페이스"))
 
-        // 2행: 칼로리 / 시작시간 / 종료시간
+        // 칼로리 / 시작시간 / 종료시간
         val statsRow2 = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(

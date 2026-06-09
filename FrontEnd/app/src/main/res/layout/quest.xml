@@ -239,18 +239,18 @@
                 app:layout_constraintTop_toBottomOf="@id/card_achievement" />
 
             <!-- 퀘스트 재로드 테스트 버튼 -->
-            <Button
-                android:id="@+id/btn_test_quest_api"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="퀘스트 불러오기 테스트"
-                android:textSize="12sp"
-                android:textColor="#ffffff"
-                android:backgroundTint="#9B6FD4"
-                app:cornerRadius="12dp"
-                android:layout_marginTop="8dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_quest_list_title" />
+<!--            <Button-->
+<!--                android:id="@+id/btn_test_quest_api"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="퀘스트 불러오기 테스트"-->
+<!--                android:textSize="12sp"-->
+<!--                android:textColor="#ffffff"-->
+<!--                android:backgroundTint="#9B6FD4"-->
+<!--                app:cornerRadius="12dp"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/tv_quest_list_title" />-->
 
             <!-- 로딩 인디케이터 -->
             <ProgressBar
@@ -261,7 +261,7 @@
                 android:layout_marginTop="24dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btn_test_quest_api" />
+                app:layout_constraintTop_toBottomOf="@id/tv_quest_list_title" />
 
             <!-- 동적 퀘스트 카드 컨테이너 -->
             <LinearLayout
@@ -272,7 +272,7 @@
                 android:layout_marginTop="12dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btn_test_quest_api" />
+                app:layout_constraintTop_toBottomOf="@id/tv_quest_list_title" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

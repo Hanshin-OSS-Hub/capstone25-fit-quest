@@ -53,7 +53,6 @@ class RankingAdapter(
 
         holder.nameText.text  = user.name
         holder.levelText.text = "LV ${user.level}"
-        // ★ 칭호는 시스템 폰트로 강제 (한글 깨짐 방지)
         holder.titleText.typeface = Typeface.DEFAULT
         holder.titleText.text = if (user.title.isEmpty() || user.title == "null") "[칭호 없음]" else "[${user.title}]"
         holder.scoreText.text = "${user.exp} XP"
@@ -94,12 +93,12 @@ class RankingAdapter(
         notifyDataSetChanged()
     }
 
-    // ★ userTitle(R.id.userTitle)은 폰트 적용 제외
+
     private fun applyFont(view: View, typeface: Typeface?) {
         if (view is ViewGroup) {
             for (i in 0 until view.childCount) applyFont(view.getChildAt(i), typeface)
         } else if (view is TextView) {
-            if (view.id == R.id.userTitle) return   // 칭호는 시스템 폰트 유지
+            if (view.id == R.id.userTitle) return
             view.typeface = typeface
         } else if (view is MaterialButton) {
             view.typeface = typeface

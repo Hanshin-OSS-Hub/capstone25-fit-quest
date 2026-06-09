@@ -81,10 +81,10 @@ class QuestFragment : Fragment() {
         }
 
         // 테스트 버튼: 퀘스트 강제 재로드 + cycle_key 로그 출력
-        view.findViewById<Button>(R.id.btn_test_quest_api).setOnClickListener {
-            lastLoadedDate = "" // 강제 초기화 → 날짜 무관하게 재조회
-            fetchMyQuests()
-        }
+//        view.findViewById<Button>(R.id.btn_test_quest_api).setOnClickListener {
+//            lastLoadedDate = "" // 강제 초기화 → 날짜 무관하게 재조회
+//            fetchMyQuests()
+//        }
 
         fetchMyQuests()
     }
@@ -98,9 +98,9 @@ class QuestFragment : Fragment() {
         }
     }
 
-    // ──────────────────────────────────────────
-    //  API: 내 퀘스트 목록 불러오기
-    // ──────────────────────────────────────────
+
+    //  API 퀘스트 목록 불러오기
+
     private fun fetchMyQuests() {
         val sharedPref  = requireActivity().getSharedPreferences("FitQuestPrefs", Context.MODE_PRIVATE)
         val accessToken = sharedPref.getString("access_token", "") ?: ""
@@ -123,13 +123,13 @@ class QuestFragment : Fragment() {
                     for (i in 0 until arr.length()) {
                         allQuests.add(arr.getJSONObject(i))
                     }
-                    // 서버 응답에서 이번 주 cycle_key 직접 추출 (YYYY-WXX 형식)
+                    // 서버 응답에서 이번 주 cycle_key 추출
                     currentWeekKey = allQuests
                         .map { it.optString("cycle_key", "") }
                         .firstOrNull { it.matches(Regex("\\d{4}-W\\d{2}")) } ?: ""
                     lastLoadedDate = java.time.LocalDate.now().toString()
 
-                    // ── 디버그: 받은 cycle_key 전체 출력 ──
+                    // 받은 cycle_key 전체 출력 테스트
                     val today = java.time.LocalDate.now()
                     Log.i("quest_cycle", "===== cycle_key 목록 (총 ${allQuests.size}개) =====")
                     Log.i("quest_cycle", "앱 계산값 -> daily:$today / weekly:$currentWeekKey / monthly:${buildMonthKey(today)}")
@@ -172,9 +172,8 @@ class QuestFragment : Fragment() {
         Volley.newRequestQueue(requireContext()).add(request)
     }
 
-    // ──────────────────────────────────────────
+
     //  달성률 통계 업데이트
-    // ──────────────────────────────────────────
     private fun updateAchievementStats() {
         val today      = java.time.LocalDate.now()
         val todayStr   = today.toString()
@@ -211,9 +210,8 @@ class QuestFragment : Fragment() {
         }
     }
 
-    // ──────────────────────────────────────────
     //  현재 탭에 맞는 퀘스트 카드 렌더링
-    // ──────────────────────────────────────────
+
     private fun renderQuestCards() {
         questContainer.removeAllViews()
 
@@ -253,9 +251,8 @@ class QuestFragment : Fragment() {
         }
     }
 
-    // ──────────────────────────────────────────
     //  퀘스트 카드 뷰 동적 생성
-    // ──────────────────────────────────────────
+
     private fun buildQuestCard(quest: JSONObject): View {
         val ctx         = requireContext()
         val dp          = ctx.resources.displayMetrics.density
@@ -289,20 +286,28 @@ class QuestFragment : Fragment() {
         val unit = when {
             questDesc.contains("km") -> "km"
             questDesc.contains("kcal") -> "kcal"
+            questDesc.contains("시간") -> "분"
             questDesc.contains("분") -> "분"
             questDesc.contains("개") -> "개"
             questDesc.contains("일") && cycleKey.length > 7 -> "일"
             else -> ""
         }
         val progressText = if (unit.isNotEmpty()) {
-            val prog = if (progressVal == progressVal.toLong().toDouble()) progressVal.toLong().toString() else "%.1f".format(progressVal)
-            val tgt  = if (targetValue == targetValue.toLong().toDouble()) targetValue.toLong().toString() else "%.1f".format(targetValue)
-            "$prog / $tgt $unit"
+            if (unit == "분") {
+                // 서버값이 초 단위이므로 /60 변환
+                val progMin = (progressVal / 60).toLong()
+                val targMin = (targetValue / 60).toLong()
+                "$progMin / $targMin 분"
+            } else {
+                val prog = if (progressVal == progressVal.toLong().toDouble()) progressVal.toLong().toString() else "%.1f".format(progressVal)
+                val tgt  = if (targetValue == targetValue.toLong().toDouble()) targetValue.toLong().toString() else "%.1f".format(targetValue)
+                "$prog / $tgt $unit"
+            }
         } else {
             "${progressVal.toLong()} / ${targetValue.toLong()}"
         }
 
-        // ── 카드 MaterialCardView (programmatic) ──
+        // 카드
         val card = com.google.android.material.card.MaterialCardView(ctx).apply {
             radius          = 16 * dp
             cardElevation   = 4 * dp
@@ -313,13 +318,13 @@ class QuestFragment : Fragment() {
             ).apply { setMargins(0, 0, 0, (12 * dp).toInt()) }
         }
 
-        // 카드 내부 루트 ConstraintLayout 대신 LinearLayout으로 간단하게 구성
+        // 카드 내부 루트
         val innerLayout = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding((14 * dp).toInt(), (12 * dp).toInt(), (14 * dp).toInt(), (12 * dp).toInt())
         }
 
-        // 왼쪽: 아이콘
+        // 왼쪽 아이콘
         val tvIcon = TextView(ctx).apply {
             text     = icon
             textSize = 24f
@@ -329,7 +334,7 @@ class QuestFragment : Fragment() {
             ).apply { gravity = android.view.Gravity.CENTER_VERTICAL }
         }
 
-        // 가운데: 텍스트 + 프로그레스바
+        // 가운데 텍스트 + 프로그레스바
         val contentLayout = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
@@ -381,7 +386,7 @@ class QuestFragment : Fragment() {
         contentLayout.addView(progressBar)
         contentLayout.addView(tvProgressText)
 
-        // 오른쪽: 달성하기 버튼
+        // 오른쪽 달성하기 버튼
         val btnComplete = Button(ctx).apply {
             layoutParams = LinearLayout.LayoutParams(
                 (72 * dp).toInt(), (32 * dp).toInt()
@@ -392,7 +397,6 @@ class QuestFragment : Fragment() {
             textSize = 10f
             setPadding(0, 0, 0, 0)
             (this as? Button)?.let {
-                // inset 제거를 위해 insetTop/Bottom은 XML에서만 가능 → 패딩으로 대체
             }
 
             when {
@@ -404,7 +408,7 @@ class QuestFragment : Fragment() {
                 }
                 isCompleted -> {
                     text = "달성하기"
-                    backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#9B6FD4"))
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#5fad5c"))
                     setTextColor(Color.WHITE)
                     isEnabled = true
                 }
@@ -417,7 +421,7 @@ class QuestFragment : Fragment() {
             }
         }
 
-        // 달성하기 클릭 → claim API 호출
+        // 달성하기 클릭 API 호출
         if (isCompleted && !isClaimed) {
             btnComplete.setOnClickListener {
                 claimQuestReward(progressId, btnComplete)
@@ -431,9 +435,9 @@ class QuestFragment : Fragment() {
         return card
     }
 
-    // ──────────────────────────────────────────
-    //  API: 보상 클레임 POST
-    // ──────────────────────────────────────────
+
+    // 보상 클레임 POST
+
     private fun claimQuestReward(progressId: Int, btn: Button) {
         if (progressId == -1) {
             Log.e("QuestFragment", "유효하지 않은 progressId")
@@ -511,9 +515,8 @@ class QuestFragment : Fragment() {
         Volley.newRequestQueue(requireContext()).add(request)
     }
 
-    // ──────────────────────────────────────────
+
     //  UI 유틸
-    // ──────────────────────────────────────────
     private fun showLoading(show: Boolean) {
         activity?.runOnUiThread {
             view?.findViewById<ProgressBar>(R.id.progress_loading)?.visibility =
@@ -548,11 +551,7 @@ class QuestFragment : Fragment() {
         selected.setTextColor(Color.WHITE)
     }
 
-    // ──────────────────────────────────────────
-    //  cycle_key 생성 헬퍼
-    // ──────────────────────────────────────────
 
-    /** 서버의 월간 cycle_key 형식: 2026-04 */
     private fun buildMonthKey(date: java.time.LocalDate): String {
         return "${date.year}-${date.monthValue.toString().padStart(2, '0')}"
     }

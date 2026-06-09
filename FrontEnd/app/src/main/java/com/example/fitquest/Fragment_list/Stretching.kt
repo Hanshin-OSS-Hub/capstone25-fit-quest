@@ -4,10 +4,12 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.example.fitquest.R
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
@@ -16,6 +18,7 @@ import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
+import android.util.Log
 
 class StretchingFragment : Fragment(R.layout.fragment_stretching) {
 
@@ -31,10 +34,10 @@ class StretchingFragment : Fragment(R.layout.fragment_stretching) {
 
         thread {
             try {
-                val url = URL("https://fitquest25.xyz/api/workout/workouts/")
+                val url  = URL("https://fitquest25.xyz/api/workout/workouts/")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "GET"
-                val response = conn.inputStream.bufferedReader().readText()
+                val response  = conn.inputStream.bufferedReader().readText()
                 val jsonArray = JSONArray(response)
 
                 val items = mutableListOf<Map<String, String>>()
@@ -45,7 +48,9 @@ class StretchingFragment : Fragment(R.layout.fragment_stretching) {
                             "name"             to obj.getString("name"),
                             "target_muscle"    to obj.getString("target_muscle"),
                             "equipment"        to obj.getString("equipment"),
-                            "duration_or_reps" to obj.getString("duration_or_reps")
+                            "duration_or_reps" to obj.getString("duration_or_reps"),
+                            "image_url"        to (if (obj.has("image_url") && !obj.isNull("image_url"))
+                                obj.getString("image_url") else "")
                         ))
                     }
                 }
@@ -53,104 +58,174 @@ class StretchingFragment : Fragment(R.layout.fragment_stretching) {
                 requireActivity().runOnUiThread {
                     allItems = items
 
-                    // 중복 없는 부위 목록 (등장 순서 유지)
                     val muscles = items.map { it["target_muscle"] ?: "" }
-                        .distinct()
-                        .filter { it.isNotBlank() }
+                        .distinct().filter { it.isNotBlank() }
 
-                    // Chip 생성
                     muscles.forEach { muscle ->
-                        val chip = Chip(requireContext()).apply {
-                            text = muscle
+                        chipGroup.addView(Chip(requireContext()).apply {
+                            text        = muscle
                             isCheckable = true
-                            typeface = interRegular
-                            setTextColor(resources.getColorStateList(
-                                com.google.android.material.R.color.mtrl_choice_chip_text_color,
-                                requireContext().theme
-                            ))
-                        }
-                        chipGroup.addView(chip)
+                            typeface    = interRegular
+                        })
                     }
 
-                    // 첫 번째 부위 자동 선택
                     if (chipGroup.childCount > 0) {
                         (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
                         showMuscle(container, muscles.firstOrNull() ?: "")
                     }
 
-                    // Chip 선택 리스너
                     chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-                        val selectedChip = checkedIds.firstOrNull()
+                        val selected = checkedIds.firstOrNull()
                             ?.let { group.findViewById<Chip>(it) }
-                        showMuscle(container, selectedChip?.text?.toString() ?: "")
+                        showMuscle(container, selected?.text?.toString() ?: "")
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            } catch (e: Exception) { e.printStackTrace() }
         }
     }
 
     private fun showMuscle(container: LinearLayout, muscle: String) {
         container.removeAllViews()
-        val filtered = allItems.filter { it["target_muscle"] == muscle }
+        allItems.filter { it["target_muscle"] == muscle }
+            .forEach { container.addView(buildCard(it)) }
+    }
 
-        for (item in filtered) {
-            val card = MaterialCardView(requireContext()).apply {
-                radius = 16f * resources.displayMetrics.density
-                cardElevation = 4f * resources.displayMetrics.density
-                setCardBackgroundColor(0xCCFFFFFF.toInt())
-                val marginPx = (8 * resources.displayMetrics.density).toInt()
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { setMargins(0, 0, 0, marginPx) }
-            }
+    private fun encodeImageUrl(raw: String): String {
+        return if (raw.startsWith("http")) raw
+        else "https://fitquest25.xyz$raw"
+    }
 
-            val inner = LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.VERTICAL
-                val padPx = (16 * resources.displayMetrics.density).toInt()
-                setPadding(padPx, padPx, padPx, padPx)
-            }
+    private fun buildCard(item: Map<String, String>): View {
+        Log.d("ImageURL", "raw = ${item["image_url"]}")
+        val dp = resources.displayMetrics.density
 
-            inner.addView(TextView(requireContext()).apply {
-                text = item["name"]
-                textSize = 15f
-                setTextColor(0xFF000000.toInt())
-                setTypeface(interRegular, Typeface.BOLD)
-                val pb = (6 * resources.displayMetrics.density).toInt()
-                setPadding(0, 0, 0, pb)
-            })
+        val card = MaterialCardView(requireContext()).apply {
+            radius        = 16f * dp
+            cardElevation = 4f  * dp
+            setCardBackgroundColor(0xCCFFFFFF.toInt())
+            layoutParams  = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 0, 0, (8 * dp).toInt()) }
+            isClickable = true
+            isFocusable = true
+        }
 
-            fun addRow(label: String, value: String) {
-                val row = LinearLayout(requireContext()).apply {
-                    orientation = LinearLayout.HORIZONTAL
-                    val pb = (4 * resources.displayMetrics.density).toInt()
-                    setPadding(0, 0, 0, pb)
-                }
-                row.addView(TextView(requireContext()).apply {
-                    text = label
-                    textSize = 13f
-                    setTextColor(0xFF555555.toInt())
-                    typeface = interRegular
+        val inner = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            val p = (16 * dp).toInt()
+            setPadding(p, p, p, p)
+        }
+
+        val headerRow = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+        val titleTv = TextView(requireContext()).apply {
+            text      = item["name"]
+            textSize  = 15f
+            setTextColor(0xFF000000.toInt())
+            setTypeface(interRegular, Typeface.BOLD)
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        val arrowTv = TextView(requireContext()).apply {
+            text      = "▼"
+            textSize  = 12f
+            setTextColor(0xFF888888.toInt())
+        }
+        headerRow.addView(titleTv)
+        headerRow.addView(arrowTv)
+        inner.addView(headerRow)
+
+        inner.addView(View(requireContext()).apply {
+            setBackgroundColor(0x22000000)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, (1 * dp).toInt()
+            ).apply { setMargins(0, (8 * dp).toInt(), 0, (8 * dp).toInt()) }
+        })
+
+        fun addRow(label: String, value: String) {
+            inner.addView(LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(0, 0, 0, (4 * dp).toInt())
+                addView(TextView(requireContext()).apply {
+                    text = label; textSize = 13f
+                    setTextColor(0xFF555555.toInt()); typeface = interRegular
                     layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 })
-                row.addView(TextView(requireContext()).apply {
-                    text = value
-                    textSize = 13f
-                    setTextColor(0xFF000000.toInt())
-                    typeface = interRegular
+                addView(TextView(requireContext()).apply {
+                    text = value; textSize = 13f
+                    setTextColor(0xFF000000.toInt()); typeface = interRegular
                     gravity = android.view.Gravity.END
                     layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 })
-                inner.addView(row)
-            }
-
-            addRow("기구", item["equipment"] ?: "")
-            addRow("횟수/시간", item["duration_or_reps"] ?: "")
-
-            card.addView(inner)
-            container.addView(card)
+            })
         }
+        addRow("기구",      item["equipment"]        ?: "")
+        addRow("횟수/시간", item["duration_or_reps"] ?: "")
+
+        val imageView = ImageView(requireContext()).apply {
+            visibility       = View.GONE
+            scaleType        = ImageView.ScaleType.CENTER_CROP
+            adjustViewBounds = true
+            layoutParams     = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, (200 * dp).toInt()
+            ).apply { setMargins(0, (10 * dp).toInt(), 0, 0) }
+        }
+        inner.addView(imageView)
+        card.addView(inner)
+
+        var expanded = false
+        card.setOnClickListener {
+            expanded = !expanded
+            arrowTv.text = if (expanded) "▲" else "▼"
+            if (expanded) {
+                imageView.visibility = View.VISIBLE
+                val raw = item["image_url"]?.toString().orEmpty()
+                Log.d("ImageURL", "raw = $raw")
+                val fullUrl = encodeImageUrl(raw)
+                Log.d("ImageURL", "encoded = $fullUrl")
+                if (raw.isNotEmpty()) {
+                    val fullUrl = encodeImageUrl(raw)
+                    Glide.with(imageView.context)
+                        .load(fullUrl)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .error(android.R.drawable.ic_menu_report_image)
+                        .listener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
+                            override fun onLoadFailed(
+                                e: com.bumptech.glide.load.engine.GlideException?,
+                                model: Any?,
+                                target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                Log.e("ImageURL", "로드 실패: $fullUrl")
+                                Log.e("ImageURL", "에러: ${e?.message}")
+                                return false
+                            }
+                            override fun onResourceReady(
+                                resource: android.graphics.drawable.Drawable,
+                                model: Any,
+                                target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                                dataSource: com.bumptech.glide.load.DataSource,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                Log.d("ImageURL", "로드 성공: $fullUrl")
+                                return false
+                            }
+                        })
+                        .into(imageView)
+                } else {
+                    imageView.setImageResource(android.R.drawable.ic_menu_report_image)
+                }
+            } else {
+                imageView.visibility = View.GONE
+                Glide.with(imageView.context).clear(imageView)
+            }
+        }
+
+        return card
     }
 }

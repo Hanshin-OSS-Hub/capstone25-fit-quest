@@ -84,8 +84,10 @@ class Login : AppCompatActivity() {
             startActivity(Intent(this, SignUp::class.java))
         }
 
-        findViewById<Button>(R.id.test).setOnClickListener { goToMainActivity() }
-        findViewById<Button>(R.id.test2).setOnClickListener { goToHActivity() }
+        // 로그인창 테스트버튼
+
+//        findViewById<Button>(R.id.test).setOnClickListener { goToMainActivity() }
+//        findViewById<Button>(R.id.test2).setOnClickListener { goToHActivity() }
 
         UserApiClient.instance.accessTokenInfo { tokenInfo, error ->
             if (tokenInfo != null) {

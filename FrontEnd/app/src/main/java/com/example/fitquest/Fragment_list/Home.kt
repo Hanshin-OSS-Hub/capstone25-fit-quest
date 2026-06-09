@@ -83,15 +83,15 @@ class HomeFragment : Fragment() {
         // 전체업적 조회 https://fitquest25.xyz/api/auth/achievements/
         // 랭킹 관련 조회 https://fitquest25.xyz/api/auth/ranking/
         // 내 정보 조회 https://fitquest25.xyz/api/auth/me/
-        view.findViewById<Button>(R.id.btn_test_achievements).setOnClickListener {
-            testApi("https://fitquest25.xyz/api/workout/achievements/", "achievement_test")
-        }
-        view.findViewById<Button>(R.id.btn_test_titles).setOnClickListener {
-            testApi("https://fitquest25.xyz/api/auth/titles/", "achievement_test")
-        }
-        view.findViewById<Button>(R.id.btn_test_me).setOnClickListener {
-            testApi("https://fitquest25.xyz/api/auth/me/", "achievement_test")
-        }
+//        view.findViewById<Button>(R.id.btn_test_achievements).setOnClickListener {
+//            testApi("https://fitquest25.xyz/api/workout/achievements/", "achievement_test")
+//        }
+//        view.findViewById<Button>(R.id.btn_test_titles).setOnClickListener {
+//            testApi("https://fitquest25.xyz/api/auth/titles/", "achievement_test")
+//        }
+//        view.findViewById<Button>(R.id.btn_test_me).setOnClickListener {
+//            testApi("https://fitquest25.xyz/api/auth/me/", "achievement_test")
+//        }
 
         timeTextView    = view.findViewById(R.id.timeTextView)
         fightingText    = view.findViewById(R.id.fighting_text)
@@ -104,12 +104,12 @@ class HomeFragment : Fragment() {
         tvTotalDuration = view.findViewById(R.id.tv_total_duration)
         tvTotalCalories = view.findViewById(R.id.tv_total_calories)
 
-        view.findViewById<Button>(R.id.gologin).setOnClickListener {
-            startActivity(Intent(requireContext(), Login::class.java))
-        }
-        view.findViewById<Button>(R.id.goHealth).setOnClickListener {
-            startActivity(Intent(requireContext(), Health::class.java))
-        }
+//        view.findViewById<Button>(R.id.gologin).setOnClickListener {
+//            startActivity(Intent(requireContext(), Login::class.java))
+//        }
+//        view.findViewById<Button>(R.id.goHealth).setOnClickListener {
+//            startActivity(Intent(requireContext(), Health::class.java))
+//        }
         view.findViewById<TextView>(R.id.tv_achievement_btn).setOnClickListener {
             showAchievementDialog()
         }
@@ -176,10 +176,11 @@ class HomeFragment : Fragment() {
                     val nickname = json.optString("nickname", "사용자")
                     val level    = json.optInt("level", 1)
                     val exp      = json.optInt("exp", 0)
+
                     val title    = json.optString("current_title", "")
                     val streakDays = json.optInt("streak_days", 0)
 
-                    // 유저 변경 감지 → 누적기록 캐시 초기화
+                    // 유저 변경 감지, 누적기록 캐시 초기화
                     val cachedInfo = sharedPref.getString("user_info", null)
                     val cachedId   = if (cachedInfo != null) {
                         try { JSONObject(cachedInfo).optInt("id", -1) } catch (e: Exception) { -1 }
@@ -202,9 +203,18 @@ class HomeFragment : Fragment() {
                     tvUsername.text      = nickname
                     tvLevel.text         = "LV $level"
                     tvTitle.text         = if (title.isEmpty() || title == "null") "[칭호 없음]" else "[$title]"
-                    tvExp.text           = "EXP $exp / 100"
-                    expProgress.progress = exp
-                    view?.findViewById<TextView>(R.id.tv_streak)?.text = "${streakDays + 1}일"
+
+//                    tvExp.text           = "EXP $exp"
+//                    expProgress.progress = exp
+
+                    val levelExp    = json.optInt("level_exp", 0)
+                    val expRequired = json.optInt("exp_required", 50)
+                    tvExp.text = "EXP $levelExp / $expRequired"
+                    expProgress.max = expRequired
+                    expProgress.progress = levelExp.coerceAtMost(expRequired)
+
+                    view?.findViewById<TextView>(R.id.tv_streak)?.text = "${streakDays}일"
+
 
                     fetchAchievementCount()
                     fetchUserRanking()
@@ -225,9 +235,12 @@ class HomeFragment : Fragment() {
                         tvUsername.text      = json.optString("nickname", "사용자")
                         tvLevel.text         = "LV ${json.optInt("level", 1)}"
                         tvTitle.text         = if (title.isEmpty() || title == "null") "[칭호 없음]" else "[$title]"
-                        val exp              = json.optInt("exp", 0)
-                        tvExp.text           = "EXP $exp / 100"
-                        expProgress.progress = exp
+                        val exp         = json.optInt("exp", 0)
+                        val levelExp    = json.optInt("level_exp", 0)
+                        val expRequired = json.optInt("exp_required", 50)
+                        tvExp.text           = "EXP $levelExp / $expRequired"
+                        expProgress.max      = expRequired
+                        expProgress.progress = levelExp.coerceAtMost(expRequired)
                         view?.findViewById<TextView>(R.id.tv_streak)?.text = "${streakDays}일"
                     } catch (e: Exception) { }
                 }
